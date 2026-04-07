@@ -387,6 +387,25 @@
       </div>
     </div>
 
+    <!-- Docentes -->
+    <div class="nav-group {{ request()->is('admin*') ? 'open' : '' }}" id="grp-docentes">
+      <div class="nav-group-toggle" onclick="toggleGroup('grp-docentes')">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        Docentes
+        <span class="arrow">▶</span>
+      </div>
+      <div class="nav-subitems">
+        <a href="{{ route('docentes.tomar-lista') }}" 
+        class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
+            Tomar lista
+        </a>
+        <a href="{{ route('docentes.tomar-lista') }}" 
+        class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
+            Reporte Asistencias
+        </a>
+      </div>
+    </div>
+
     <!-- Comunicaciones -->
     <div class="nav-group {{ request()->is('comunicaciones*') ? 'open' : '' }}" id="grp-com">
       <div class="nav-group-toggle" onclick="toggleGroup('grp-com')">
