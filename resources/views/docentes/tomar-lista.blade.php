@@ -239,16 +239,11 @@
 </style>
 @endpush
 
-@section('content')
+{{-- El layout abm.blade.php renderiza automáticamente el page-header usando
+     @yield('title') y @yield('breadcrumb'). Solo hay que definir el trail. --}}
+@section('breadcrumb', 'Módulo docente / Tomar lista')
 
-{{-- Breadcrumb --}}
-<div class="page-header fade-1">
-  <div class="page-title">Tomar lista</div>
-  <div class="page-breadcrumb">
-    <a href="{{ route('dashboard') }}">Panel principal</a>
-    &nbsp;/&nbsp; Módulo docente &nbsp;/&nbsp; Tomar lista
-  </div>
-</div>
+@section('content')
 
 {{-- Mensaje de éxito (flash message de la sesión) --}}
 {{-- session('success') lee el mensaje que guardó el controller con ->with('success', ...) --}}

@@ -302,16 +302,9 @@
 </style>
 @endpush
 
-@section('content')
+@section('breadcrumb', 'Módulo docente / Libro de temas')
 
-{{-- Breadcrumb --}}
-<div class="page-header fade-1">
-  <div class="page-title">Libro de temas</div>
-  <div class="page-breadcrumb">
-    <a href="{{ route('dashboard') }}">Panel principal</a>
-    &nbsp;/&nbsp; Módulo docente &nbsp;/&nbsp; Libro de temas
-  </div>
-</div>
+@section('content')
 
 {{-- Alerta de éxito --}}
 @if (session('success'))

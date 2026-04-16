@@ -101,12 +101,22 @@
       margin: 0 4px;
     }
 
-    /* Título de la pantalla actual */
-    .screen-title {
-      font-size: 13px;
+    /* Breadcrumb en el header */
+    .header-breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12.5px;
       color: var(--muted);
-      font-weight: 400;
     }
+    .header-breadcrumb a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    .header-breadcrumb a:hover { color: var(--accent2); }
+    .bc-sep { color: var(--muted2); font-size: 11px; margin: 0 2px; }
+    .bc-current { color: var(--text); font-weight: 500; }
 
     /* Volver al dashboard */
     .btn-back {
@@ -220,7 +230,19 @@
     </div>
     <span class="brand-title">SGITLP</span>
     <div class="header-sep"></div>
-    <span class="screen-title">@yield('title', 'Panel')</span>
+
+    {{-- Breadcrumb dinámico: siempre arranca con "Panel principal".
+         Si la vista define @section('breadcrumb'), se agrega el trail.
+         El último segmento siempre es el @yield('title') en negrita. --}}
+    <nav class="header-breadcrumb">
+      <a href="{{ route('dashboard') }}">Panel principal</a>
+      @hasSection('breadcrumb')
+        <span class="bc-sep">/</span>
+        @yield('breadcrumb')
+        <span class="bc-sep">/</span>
+      @endif
+      <span class="bc-current">@yield('title', 'Panel')</span>
+    </nav>
   </div>
 
   <div class="header-right">
