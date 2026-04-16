@@ -300,7 +300,7 @@
       </div>
       <div class="user-info">
         <span class="user-name">{{ auth()->check() ? auth()->user()->name : 'Usuario' }}</span>
-        <span class="user-role">{{ auth()->check() ? auth()->user()->getRoleNames()->first() : 'Sin rol' }}</span>
+        <span class="user-role">Docente</span>
       </div>
       <span class="chevron">▼</span>
 
@@ -315,7 +315,8 @@
         </div>
         <div class="dropdown-sep"></div>
         {{-- Formulario de logout: POST por seguridad (protección CSRF de Laravel) --}}
-        <form method="POST"  style="margin:0">
+        {{-- action apunta a la ruta 'logout' definida en routes/web.php --}}
+        <form method="POST" action="{{ route('logout') }}" style="margin:0">
           @csrf
           <button type="submit" class="dropdown-item danger" style="width:100%;background:none;border:none;font-family:inherit;cursor:pointer;text-align:left">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -388,21 +389,25 @@
     </div>
 
     <!-- Docentes -->
-    <div class="nav-group {{ request()->is('admin*') ? 'open' : '' }}" id="grp-docentes">
+    {{-- request()->is('docentes*') abre el grupo automáticamente cuando estamos en cualquier ruta /docentes/... --}}
+    <div class="nav-group {{ request()->is('docentes*') ? 'open' : '' }}" id="grp-docentes">
       <div class="nav-group-toggle" onclick="toggleGroup('grp-docentes')">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+        </svg>
         Docentes
         <span class="arrow">▶</span>
       </div>
       <div class="nav-subitems">
-        <a href="{{ route('docentes.tomar-lista') }}" 
-        class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
-            Tomar lista
+        <a href="{{ route('docentes.tomar-lista') }}"
+           class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
+          Tomar lista
         </a>
-        <a href="{{ route('docentes.tomar-lista') }}" 
-        class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
-            Reporte Asistencias
+        <a href="{{ route('docentes.libro-temas') }}"
+           class="nav-subitem {{ request()->routeIs('docentes.libro-temas') ? 'active' : '' }}">
+          Libro de temas
         </a>
+        <a href="#" class="nav-subitem">Reporte asistencias</a>
       </div>
     </div>
 
