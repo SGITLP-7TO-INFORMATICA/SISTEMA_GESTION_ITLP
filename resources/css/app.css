@@ -5,7 +5,433 @@
 @source '../**/*.blade.php';
 @source '../**/*.js';
 
+/* ── Design System ─────────────────────────────────────────────────────────
+   Definimos los colores y fuentes del sistema como variables de Tailwind v4.
+   Esto nos permite usar clases como bg-surface, text-muted, border-dim, etc.
+   en cualquier template Blade, sin escribir CSS adicional.
+   ──────────────────────────────────────────────────────────────────────── */
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* Colores de fondo y superficie */
+    --color-bg: #0f1117;
+    /* fondo general de la app */
+    --color-surface: #181c26;
+    /* cards, sidebar, header */
+    --color-surface2: #1f2333;
+    /* superficies elevadas (dropdown, hover) */
+
+    /* Bordes */
+    --color-dim: rgba(255, 255, 255, 0.07);
+    /* borde sutil */
+    --color-dim2: rgba(255, 255, 255, 0.13);
+    /* borde más visible */
+
+    /* Acento (azul principal) */
+    --color-accent: #3b82f6;
+    --color-accent2: #60a5fa;
+    --color-glow: rgba(59, 130, 246, 0.18);
+    /* halo azul translúcido */
+
+    /* Texto */
+    --color-content: #e8eaf0;
+    /* texto principal (evitamos "text" para no pisar utilidades) */
+    --color-muted: #7c8496;
+    /* texto secundario */
+    --color-muted2: #555e72;
+    /* texto terciario / elementos desactivados */
+
+    /* Estados */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+
+    /* Tipografías — se cargan desde Google Fonts en el <head> */
+    --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'DM Mono', ui-monospace, monospace;
+    --font-display: 'Playfair Display', ui-serif, serif;
+}
+
+/* ── Animación de entrada ───────────────────────────────────────────────── */
+@keyframes fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────
+   Estilos globales que no se pueden expresar como clases utilitarias.
+   ──────────────────────────────────────────────────────────────────────── */
+@layer base {
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Textura de grilla sutil en el fondo (solo con pseudo-elemento, no hay utilidad para esto) */
+    body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background-image:
+            linear-gradient(var(--color-dim) 1px, transparent 1px),
+            linear-gradient(90deg, var(--color-dim) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.5;
+    }
+
+    /* El header, sidebar y main deben quedar por encima de la grilla */
+    header,
+    aside,
+    main {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+/* ── Components ─────────────────────────────────────────────────────────────
+   Clases reutilizables para componentes complejos que usan pseudo-elementos
+   (:before/:after), estados de JS (.open), o transiciones encadenadas.
+   Tailwind no puede generar estas reglas solo con clases utilitarias.
+   ──────────────────────────────────────────────────────────────────────── */
+@layer components {
+
+    /* Animaciones de entrada escalonadas */
+    .fade-1 {
+        animation: fade-up .4s ease both;
+        animation-delay: .00s;
+    }
+
+    .fade-2 {
+        animation: fade-up .4s ease both;
+        animation-delay: .06s;
+    }
+
+    .fade-3 {
+        animation: fade-up .4s ease both;
+        animation-delay: .12s;
+    }
+
+    /* Scrollbar personalizada (webkit) */
+    .custom-scroll::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .custom-scroll::-webkit-scrollbar-thumb {
+        background: var(--color-dim2);
+        border-radius: 4px;
+    }
+
+    /* ── Botón de notificaciones ── */
+    .notif-btn {
+        position: relative;
+        background: none;
+        border: 1px solid var(--color-dim2);
+        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--color-muted);
+        transition: border-color .2s, color .2s;
+    }
+
+    .notif-btn:hover {
+        border-color: var(--color-accent);
+        color: var(--color-accent2);
+    }
+
+    /* Punto rojo de notificación */
+    .notif-dot {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        width: 6px;
+        height: 6px;
+        background: var(--color-danger);
+        border-radius: 50%;
+        border: 1.5px solid var(--color-surface);
+    }
+
+    /* ── Menú de usuario (header) ── */
+    .user-menu {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 5px 10px 5px 5px;
+        border: 1px solid var(--color-dim2);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+        user-select: none;
+    }
+
+    .user-menu:hover {
+        border-color: var(--color-accent);
+        background: var(--color-surface2);
+    }
+
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #1e3a5f, #2563eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fff;
+        flex-shrink: 0;
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--color-content);
+        line-height: 1.2;
+    }
+
+    .user-role {
+        font-size: 10px;
+        color: var(--color-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .chevron {
+        color: var(--color-muted);
+        font-size: 10px;
+        margin-left: 2px;
+        transition: transform .2s;
+    }
+
+    /* JS agrega/quita la clase .open al hacer click */
+    .user-menu.open .chevron {
+        transform: rotate(180deg);
+    }
+
+    /* ── Dropdown del usuario ── */
+    .dropdown {
+        display: none;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: var(--color-surface2);
+        border: 1px solid var(--color-dim2);
+        border-radius: 10px;
+        width: 200px;
+        padding: 6px;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+        z-index: 200;
+    }
+
+    .user-menu.open .dropdown {
+        display: block;
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 7px;
+        font-size: 13px;
+        color: var(--color-muted);
+        cursor: pointer;
+        transition: background .15s, color .15s;
+        width: 100%;
+        background: none;
+        border: none;
+        font-family: inherit;
+        text-align: left;
+    }
+
+    .dropdown-item:hover {
+        background: var(--color-dim);
+        color: var(--color-content);
+    }
+
+    .dropdown-item.danger:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--color-danger);
+    }
+
+    .dropdown-sep {
+        height: 1px;
+        background: var(--color-dim);
+        margin: 4px 0;
+    }
+
+    /* ── Nav items (sidebar) ── */
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px;
+        font-size: 13px;
+        color: var(--color-muted);
+        cursor: pointer;
+        position: relative;
+        transition: color .15s, background .15s;
+        text-decoration: none;
+    }
+
+    .nav-item:hover {
+        color: var(--color-content);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item.active {
+        color: var(--color-accent2);
+        background: var(--color-glow);
+    }
+
+    /* Barra azul a la izquierda del ítem activo */
+    .nav-item.active::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 4px;
+        bottom: 4px;
+        width: 3px;
+        background: var(--color-accent);
+        border-radius: 0 3px 3px 0;
+    }
+
+    .nav-item .icon {
+        width: 16px;
+        height: 16px;
+        opacity: 0.8;
+        flex-shrink: 0;
+    }
+
+    .nav-item.active .icon {
+        opacity: 1;
+    }
+
+    /* ── Nav groups (acordeón) ── */
+    .nav-group-toggle {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 18px;
+        font-size: 13px;
+        color: var(--color-muted);
+        cursor: pointer;
+        transition: color .15s, background .15s;
+        user-select: none;
+    }
+
+    .nav-group-toggle:hover {
+        color: var(--color-content);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-group-toggle .icon {
+        width: 16px;
+        height: 16px;
+        opacity: 0.75;
+        flex-shrink: 0;
+    }
+
+    .nav-group-toggle .arrow {
+        margin-left: auto;
+        font-size: 10px;
+        transition: transform .2s;
+        color: var(--color-muted2);
+    }
+
+    /* Cuando JS agrega .open al .nav-group */
+    .nav-group.open .nav-group-toggle .arrow {
+        transform: rotate(90deg);
+    }
+
+    .nav-group.open .nav-group-toggle {
+        color: var(--color-content);
+    }
+
+    .nav-subitems {
+        display: none;
+        padding-left: 44px;
+        padding-bottom: 4px;
+    }
+
+    .nav-group.open .nav-subitems {
+        display: block;
+    }
+
+    /* ── Nav sub-items ── */
+    .nav-subitem {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        font-size: 12.5px;
+        color: var(--color-muted);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: color .15s, background .15s;
+        text-decoration: none;
+    }
+
+    /* Bolita decorativa antes del subitem */
+    .nav-subitem::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--color-muted2);
+        flex-shrink: 0;
+        transition: background .15s;
+    }
+
+    .nav-subitem:hover {
+        color: var(--color-content);
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-subitem:hover::before {
+        background: var(--color-accent);
+    }
+
+    .nav-subitem.active {
+        color: var(--color-accent2);
+    }
+
+    .nav-subitem.active::before {
+        background: var(--color-accent);
+    }
+
+    /* ── CARDS ── */
+
+    .bg-card-1 {
+        @apply bg-slate-900/50;
+    }
+
+    .border-card-1 {
+        @apply border border-slate-800;
+    }
+
+    .card-stat {
+        @apply border border-slate-800 rounded-lg p-3 px-4 bg-slate-900/50;
+    }
 }

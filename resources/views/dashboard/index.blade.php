@@ -101,19 +101,9 @@
 </style>
 @endpush
 
-{{-- ── Encabezado de página ── --}}
-<div class="page-header fade-1">
-  <div>
-    <div class="page-title">Panel principal</div>
-    <div class="page-subtitle">Resumen institucional del día.</div>
-  </div>
-  {{-- date() es PHP nativo; en producción esto vendrá de Carbon --}}
-  <div class="date-chip">{{ \Carbon\Carbon::now()->locale('es')->isoFormat('dddd D [de] MMMM, YYYY') }}</div>
-</div>
-
 {{-- ── Tarjetas de estadísticas ── --}}
 <div class="stats-row fade-2">
-  <div class="stat-card">
+  <div class="card-stat">
     <div class="stat-header">
       <span class="stat-label">Alumnos activos</span>
       <div class="stat-icon" style="background:rgba(59,130,246,0.12)">👤</div>
