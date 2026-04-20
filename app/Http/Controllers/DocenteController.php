@@ -3,106 +3,179 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\Alumno;
+use App\Models\MateriaDictada;
 use App\Models\RegistroClase;
 use App\Models\Asistencia;
 
 class DocenteController extends Controller
 {
     // ──────────────────────────────────────────────
+    // HELPERS PRIVADOS
+    // ──────────────────────────────────────────────
+
+    // Devuelve los dictados del docente logueado desde la view.
+    private function getDictados()
+    {
+        return DB::table('view_docentes_materias_dictadas')
+            ->where('USUARIO_ID', auth()->id())
+            ->get();
+    }
+
+    // Devuelve el registro de docentes del usuario logueado.
+    private function getDocente()
+    {
+        return DB::table('docentes')
+            ->where('id_usuario', auth()->id())
+            ->first();
+    }
+
+    // ──────────────────────────────────────────────
     // TOMAR LISTA
     // ──────────────────────────────────────────────
 
-    // Muestra el formulario de tomar lista.
-    // Carga las materias/cursos/grupos del docente logueado
-    // para poblar los selects del formulario.
-    public function tomarLista()
+    public function tomarLista(Request $request)
     {
-        // auth()->user() devuelve el modelo User del usuario autenticado.
-        // docenteMaterias() es la relación hasMany que definimos en el modelo User:
-        // busca en la tabla docente_materias todos los registros con user_id = auth()->id().
-        // with(['materia', 'curso', 'grupo']) hace "eager loading":
-        // carga las relaciones en una sola query extra en vez de N queries (problema N+1).
-        $asignaciones = auth()->user()
-            ->docenteMaterias()
-            ->with(['materia', 'curso', 'grupo'])
-            ->get();
+        $dictados              = $this->getDictados();
+        $registroClase         = null;
+        $dictadoInfo           = null;
+        $asistenciasExistentes = collect();
 
-        // De las asignaciones extraemos listas únicas para los selects.
-        // pluck('materia') trae la colección de objetos Materia relacionados.
-        // unique('id') elimina duplicados (un profe puede tener varias asignaciones con la misma materia).
-        // values() re-indexa la colección (índices 0, 1, 2...).
-        $materias = $asignaciones->pluck('materia')->unique('id')->values();
-        $cursos   = $asignaciones->pluck('curso')->unique('id')->values();
-        $grupos   = $asignaciones->pluck('grupo')->filter()->unique('id')->values();
-        // filter() elimina los nulos (asignaciones sin grupo)
+        // Siempre cargar la lista de registros del docente para el selector
+        $docente   = $this->getDocente();
+        $registros = collect();
+        if ($docente) {
+            $registros = DB::table('view_docentes_registro_clases')
+                ->where('DOCENTE_A_CARGO_ID', $docente->id)
+                ->orderByDesc('REGISTRO_CLASE_FECHA')
+                ->limit(30)
+                ->get();
+        }
 
-        // compact() es un helper de PHP que crea un array asociativo
-        // ['materias' => $materias, 'cursos' => $cursos, 'grupos' => $grupos]
-        // y lo pasa a la vista como variables disponibles en Blade.
-        return view('docentes.tomar-lista', compact('materias', 'cursos', 'grupos'));
+        $registrosConAsistencia = DB::table('alumnos_asistencias')
+            ->select('Id_Registro_Clase')
+            ->distinct()
+            ->pluck('Id_Registro_Clase')
+            ->toArray();
+
+        if ($request->filled('registro_id')) {
+            $registroClase = DB::table('docentes_registro_clases')
+                ->where('id', $request->registro_id)
+                ->first();
+
+            if ($registroClase) {
+                $dictadoInfo = DB::table('view_docentes_materias_dictadas as v')
+                    ->join('materias_dictado as md', 'md.id', '=', 'v.DICTADO_ID')
+                    ->leftJoin('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
+                    ->where('v.DICTADO_ID', $registroClase->Id_Dictado_Materia)
+                    ->select('v.DICTADO_ID', 'v.MATERIA_NOMBRE', 'v.CURSO_NOMBRE', 'v.CURSO_ID',
+                             'mm.Horario_Desde', 'mm.Horario_Hasta')
+                    ->first();
+
+                $asistenciasExistentes = DB::table('alumnos_asistencias')
+                    ->where('Id_Registro_Clase', $registroClase->id)
+                    ->select('id_Alumno', 'Id_Estado', 'Hora_Tarde', 'Hora_Retiro')
+                    ->get()
+                    ->keyBy('id_Alumno');
+            }
+        }
+
+        return view('docentes.tomar-lista', compact(
+            'dictados', 'registroClase', 'dictadoInfo', 'asistenciasExistentes',
+            'registros', 'registrosConAsistencia'
+        ));
     }
 
-    // Endpoint AJAX: devuelve los alumnos de un curso+grupo en JSON.
-    // Lo llama la vista tomar-lista con fetch() cuando el usuario
-    // cambia el select de curso o grupo.
+    // Endpoint AJAX: devuelve los alumnos inscriptos en el curso del dictado.
+    // Acepta dictado_id directamente O registro_id (para resolverlo desde el registro de clase).
     public function getAlumnos(Request $request)
     {
-        $request->validate([
-            'curso_id' => 'required|exists:cursos,id',
-            'grupo_id' => 'required|exists:grupos,id',
-        ]);
+        if ($request->filled('registro_id') && ! $request->filled('dictado_id')) {
+            $reg = DB::table('docentes_registro_clases')->where('id', $request->registro_id)->first();
+            abort_if(! $reg, 404, 'Registro no encontrado.');
+            $request->merge(['dictado_id' => $reg->Id_Dictado_Materia]);
+        }
 
-        // orderBy('apellido') para que la lista quede ordenada alfabéticamente.
-        // get(['id', 'nombre', 'apellido']) solo trae esas columnas (más eficiente).
-        $alumnos = Alumno::where('curso_id', $request->curso_id)
-                         ->where('grupo_id', $request->grupo_id)
-                         ->orderBy('apellido')
-                         ->get(['id', 'nombre', 'apellido']);
+        $request->validate(['dictado_id' => 'required|integer']);
 
-        // response()->json() devuelve una respuesta HTTP con Content-Type: application/json
-        // y serializa la colección de Eloquent automáticamente.
+        $dictado = DB::table('view_docentes_materias_dictadas')
+            ->where('DICTADO_ID', $request->dictado_id)
+            ->first();
+
+        abort_if(! $dictado, 404, 'Dictado no encontrado.');
+
+        $alumnos = DB::table('alumnos')
+            ->join('mxm_alumnos_alumnos_anios as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
+            ->where('mxm.id_Curso', $dictado->CURSO_ID)
+            ->orderBy('alumnos.apellido')
+            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
+            ->get();
+
         return response()->json($alumnos);
     }
 
-    // Guarda la asistencia de la clase.
+    // Endpoint AJAX: devuelve asistencias existentes de un registro de clase
+    // para que el JS pueda pre-llenar la tabla al seleccionar desde el selector.
+    public function getAsistenciasRegistro(Request $request)
+    {
+        $request->validate(['registro_id' => 'required|integer']);
+
+        $asistencias = DB::table('alumnos_asistencias')
+            ->where('Id_Registro_Clase', $request->registro_id)
+            ->select('id_Alumno as alumnoId', 'Id_Estado as estado',
+                     'Hora_Tarde as hora_tarde', 'Hora_Retiro as hora_retiro')
+            ->get()
+            ->keyBy('alumnoId');
+
+        return response()->json($asistencias);
+    }
+
+    // Guarda la asistencia.
+    // El form envía: asistencia[alumnoId][estado], asistencia[alumnoId][hora_tarde], asistencia[alumnoId][hora_retiro]
     public function guardarLista(Request $request)
     {
         $request->validate([
-            'materia_id' => 'required|exists:materias,id',
-            'curso_id'   => 'required|exists:cursos,id',
-            'grupo_id'   => 'required|exists:grupos,id',
-            'fecha'      => 'required|date',
-            'asistencia' => 'required|array',
+            'registro_clase_id' => 'required|integer',
+            'asistencia'        => 'required|array',
         ]);
 
-        // Crea el registro cabecera de la clase.
-        // auth()->id() es el ID del usuario logueado (antes estaba hardcodeado como 1).
-        $registro = RegistroClase::create([
-            'docente_id' => auth()->id(),
-            'materia_id' => $request->materia_id,
-            'curso_id'   => $request->curso_id,
-            'grupo_id'   => $request->grupo_id,
-            'fecha'      => $request->fecha,
-        ]);
+        $registro = RegistroClase::find($request->registro_clase_id);
+        abort_if(! $registro, 404, 'Registro de clase no encontrado.');
 
-        // $request->asistencia es el array enviado por el form:
-        // ['1' => 'presente', '2' => 'ausente', '3' => 'presente', ...]
-        // donde la clave es el alumno_id y el valor es el estado.
-        foreach ($request->asistencia as $alumnoId => $estado) {
+        // El dictado_id viene del hidden input; si no llega, lo resolvemos desde el registro.
+        $dictadoId = $request->input('dictado_id') ?: $registro->Id_Dictado_Materia;
+        $dictado = DB::table('view_docentes_materias_dictadas')
+            ->where('DICTADO_ID', $dictadoId)
+            ->first();
+        abort_if(! $dictado, 404, 'Dictado no encontrado.');
+
+        // Reemplazar asistencias previas (si las hay) con las nuevas
+        DB::table('alumnos_asistencias')
+            ->where('Id_Registro_Clase', $registro->id)
+            ->delete();
+
+        foreach ($request->asistencia as $alumnoId => $datos) {
+            $estadoId = (int) ($datos['estado'] ?? 2);
             Asistencia::create([
-                'registro_id' => $registro->id,
-                'alumno_id'   => $alumnoId,
-                'estado'      => $estado,
+                'id_Alumno'              => $alumnoId,
+                'id_Curso'               => $dictado->CURSO_ID,
+                'Id_Registro_Clase'      => $registro->id,
+                'Fecha'                  => $registro->Fecha_Clase,
+                'Id_Usuario_Verificador' => auth()->id(),
+                'Id_Estado'              => $estadoId,
+                'Hora_Tarde'  => $estadoId === 3 ? ($datos['hora_tarde']  ?? null) : null,
+                'Hora_Retiro' => $estadoId === 5 ? ($datos['hora_retiro'] ?? null) : null,
             ]);
         }
 
-        // with('success', ...) guarda un mensaje en la sesión (flash message).
-        // Un flash message existe solo para la siguiente request y luego se borra.
-        // En la vista lo leemos con session('success').
+        $yaExistian = $request->boolean('ya_existian');
+        $msg = $yaExistian ? 'Asistencia actualizada correctamente.' : 'Lista guardada correctamente.';
+
         return redirect()
-            ->route('docentes.tomar-lista')
-            ->with('success', 'Lista guardada correctamente.');
+            ->route('docentes.libro-temas')
+            ->with('success', $msg)
+            ->with('last_registro_id', $registro->id);
     }
 
 
@@ -110,71 +183,99 @@ class DocenteController extends Controller
     // LIBRO DE TEMAS
     // ──────────────────────────────────────────────
 
-    // Muestra el formulario del libro de temas.
-    // Misma lógica de asignaciones que tomarLista().
     public function libroTemas()
     {
-        $asignaciones = auth()->user()
-            ->docenteMaterias()
-            ->with(['materia', 'curso', 'grupo'])
+        // Dictados del docente, incluyendo horario del módulo para pre-llenar hora desde/hasta
+        $dictados = DB::table('view_docentes_materias_dictadas as v')
+            ->join('materias_dictado as md', 'md.id', '=', 'v.DICTADO_ID')
+            ->leftJoin('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
+            ->where('v.USUARIO_ID', auth()->id())
+            ->select(
+                'v.DICTADO_ID', 'v.MATERIA_NOMBRE', 'v.CURSO_NOMBRE',
+                'mm.Horario_Desde', 'mm.Horario_Hasta', 'mm.Dia'
+            )
             ->get();
 
-        $materias = $asignaciones->pluck('materia')->unique('id')->values();
-        $cursos   = $asignaciones->pluck('curso')->unique('id')->values();
-        $grupos   = $asignaciones->pluck('grupo')->filter()->unique('id')->values();
+        // Registros de clases previos del docente
+        $docente = $this->getDocente();
+        $registros = collect();
+        if ($docente) {
+            $registros = DB::table('view_docentes_registro_clases')
+                ->where('DOCENTE_A_CARGO_ID', $docente->id)
+                ->orderByDesc('REGISTRO_CLASE_FECHA')
+                ->limit(20)
+                ->get();
+        }
 
-        // Últimas entradas del libro de temas del docente logueado,
-        // para mostrar el historial reciente en la vista.
-        // with(['materia', 'curso', 'grupo']) carga las relaciones para poder
-        // mostrar los nombres en vez de los IDs.
-        $ultimasClases = RegistroClase::where('docente_id', auth()->id())
-            ->whereNotNull('temas_dictados')   // solo registros con contenido de libro de temas
-            ->with(['materia', 'curso', 'grupo'])
-            ->orderByDesc('fecha')
-            ->orderByDesc('numero_clase')
-            ->limit(10)
-            ->get();
+        // IDs de registros que ya tienen asistencias cargadas
+        $registrosConAsistencia = DB::table('alumnos_asistencias')
+            ->select('Id_Registro_Clase')
+            ->distinct()
+            ->pluck('Id_Registro_Clase')
+            ->toArray();
 
-        return view('docentes.libro-temas', compact('materias', 'cursos', 'grupos', 'ultimasClases'));
+        // Permite abrir la página con un registro ya seleccionado (desde tomar-lista)
+        $verRegistroId = request('registro_id') ?? session('last_registro_id');
+
+        return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId'));
     }
 
-    // Guarda una nueva entrada del libro de temas.
+    // Crea o actualiza un registro de clase del libro de temas.
     public function guardarLibroTemas(Request $request)
     {
         $request->validate([
-            'materia_id'        => 'required|exists:materias,id',
-            'curso_id'          => 'required|exists:cursos,id',
-            'grupo_id'          => 'required|exists:grupos,id',
-            'fecha'             => 'required|date',
-            'numero_clase'      => 'required|integer|min:1|max:9999',
-            'unidad'            => 'nullable|string|max:255',
-            'temas_dictados'    => 'required|string|max:2000',
-            'actividades'       => 'nullable|string|max:2000',
-            'observaciones'     => 'nullable|string|max:2000',
-            'nombre_observador' => 'nullable|string|max:255',
+            'dictado_id'       => 'required|integer',
+            'numero_clase'     => 'required|integer|min:1|max:9999',
+            'fecha'            => 'required|date',
+            'objetivo_clase'   => 'nullable|string|max:500',
+            'contenidos_vistos'=> 'nullable|string|max:1000',
+            'actividades'      => 'nullable|string|max:1000',
+            'observaciones'    => 'nullable|string|max:1000',
+            'observador_clase' => 'nullable|string|max:255',
         ]);
 
-        RegistroClase::create([
-            'docente_id'        => auth()->id(),
-            'materia_id'        => $request->materia_id,
-            'curso_id'          => $request->curso_id,
-            'grupo_id'          => $request->grupo_id,
-            'fecha'             => $request->fecha,
-            'numero_clase'      => $request->numero_clase,
-            'unidad'            => $request->unidad,
-            'temas_dictados'    => $request->temas_dictados,
-            'actividades'       => $request->actividades,
-            'observaciones'     => $request->observaciones,
-            // boolean('hubo_observador') convierte el checkbox a true/false.
-            // Un checkbox HTML no enviado = campo ausente en el request = false.
-            'hubo_observador'   => $request->boolean('hubo_observador'),
-            'nombre_observador' => $request->boolean('hubo_observador')
-                                    ? $request->nombre_observador
-                                    : null,
-        ]);
+        $docente = $this->getDocente();
+
+        // Verificar duplicado solo al crear (no al editar)
+        if (! $request->filled('registro_id')) {
+            $yaExiste = DB::table('docentes_registro_clases')
+                ->where('Id_Dictado_Materia', $request->dictado_id)
+                ->where('Fecha_Clase', $request->fecha)
+                ->exists();
+
+            if ($yaExiste) {
+                return back()
+                    ->withInput()
+                    ->withErrors(['fecha' => 'Ya existe un registro de clase para esta materia en la fecha seleccionada.']);
+            }
+        }
+
+        $datos = [
+            'Id_Dictado_Materia'       => $request->dictado_id,
+            'id_Docente_A_Cargo'       => $docente?->id,
+            'Fecha_Clase'              => $request->fecha,
+            'Numero_Clase'             => $request->numero_clase,
+            'Objetivo_Clase'           => $request->objetivo_clase,
+            'Contenidos_Vistos'        => $request->contenidos_vistos,
+            'Actividades_Desarrolladas'=> $request->actividades,
+            'Observaciones'            => $request->observaciones,
+        ];
+
+        if ($request->filled('registro_id')) {
+            // Edición de un registro existente
+            RegistroClase::where('id', $request->registro_id)->update($datos);
+            $registroId = $request->registro_id;
+            $msg = 'Registro de clase actualizado correctamente.';
+        } else {
+            // Nuevo registro
+            $registro = RegistroClase::create($datos);
+            $registroId = $registro->id;
+            $msg = 'Clase registrada en el libro de temas.';
+        }
 
         return redirect()
             ->route('docentes.libro-temas')
-            ->with('success', 'Clase registrada en el libro de temas.');
+            ->with('success', $msg)
+            ->with('last_registro_id', $registroId);
     }
 }

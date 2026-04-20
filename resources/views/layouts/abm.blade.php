@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="{{ asset('icons/ITLP_LOGO.png') }}"/>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <title>@yield('title', 'SGITLP') – Sistema de Gestión</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
@@ -42,19 +43,6 @@
       flex-direction: column;
     }
 
-    /* Textura de fondo */
-    /*body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image:
-        linear-gradient(var(--border) 1px, transparent 1px),
-        linear-gradient(90deg, var(--border) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.5;
-    }*/
-
     header, main { position: relative; z-index: 1; }
 
     /* ── HEADER ── */
@@ -80,12 +68,26 @@
     .logo-mark {
       width: 34px; height: 34px;
       border-radius: 8px;
-      background: linear-gradient(135deg, var(--accent), #1d4ed8);
-      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
       flex-shrink: 0;
-      box-shadow: 0 0 16px var(--accent-glow);
+      display: flex; align-items: center; justify-content: center;
     }
-    .logo-mark svg { width: 18px; height: 18px; fill: #fff; }
+    .logo-mark img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Badge de entorno de desarrollo */
+    .env-badge {
+      font-size: 10px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--success);
+      background: rgba(50, 245, 11, 0.1);
+      border: 1px solid rgba(38, 245, 11, 0.3);
+      border-radius: 5px;
+      padding: 2px 7px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-left: 10px;
+    }
 
     .brand-title {
       font-family: var(--font-display);
@@ -158,10 +160,12 @@
       margin-top: var(--header-h);
       flex: 1;
       padding: 32px 40px;
-      max-width: 1100px;
+      max-width: 75vw;
       width: 100%;
       margin-left: auto;
       margin-right: auto;
+      margin-bottom: 15vh;
+      gap: 10px;
     }
 
     /* Encabezado de página */
@@ -217,6 +221,84 @@
     .fade-1 { animation: fadeUp .35s ease both; animation-delay: .00s; }
     .fade-2 { animation: fadeUp .35s ease both; animation-delay: .07s; }
     .fade-3 { animation: fadeUp .35s ease both; animation-delay: .14s; }
+
+    /* ── FAB zone ── */
+    #fab-zone {
+          width: 100%;
+          position: fixed;
+          bottom: 0px;
+          right: 0px;
+          z-index: 200;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background-color: var(--bg-transparent-50);
+          box-shadow: 0 4px 24px rgba(66, 85, 116, 0.25);
+          display: flex;
+          justify-content: end;
+          padding: 10px 10px;
+    }
+
+    /* Botón principal (confirmar / guardar) */
+    #btn-fab {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 22px;
+      border-radius: 14px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--font);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(59,130,246,0.45), 0 1px 4px rgba(0,0,0,0.4);
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+    }
+    #btn-fab:hover {
+      opacity: .92;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(59,130,246,0.55), 0 2px 6px rgba(0,0,0,0.4);
+    }
+    #btn-fab:active  { transform: scale(.97); }
+    #btn-fab:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Botón secundario (cancelar edición) — oculto por defecto */
+    #btn-fab-cancel {
+      display: none;   /* JS lo muestra con .fab-cancel-visible */
+      align-items: center;
+      gap: 8px;
+      padding: 13px 20px;
+      border-radius: 14px;
+      border: 1px solid rgba(239,68,68,0.35);
+      background: rgba(145, 24, 24, 0.99);
+      color: #fca5a5;
+      font-family: var(--font);
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s, background .2s, border-color .2s;
+    }
+    #btn-fab-cancel:hover {
+      background: rgba(216, 46, 46, 1);
+      border-color: rgba(239,68,68,0.6);
+      opacity: .95;
+      transform: translateY(-2px);
+    }
+    #btn-fab-cancel:active { transform: scale(.97); }
+    #btn-fab-cancel.fab-cancel-visible { display: inline-flex; }
+
+    @keyframes fabIn {
+      from { opacity: 0; transform: translateY(16px) scale(.9); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);   }
+    }
+    #fab-zone { animation: fabIn .3s cubic-bezier(.34,1.56,.64,1) both; animation-delay: .2s; }
   </style>
   @stack('styles')
 </head>
@@ -226,9 +308,14 @@
 <header>
   <div class="header-left">
     <div class="logo-mark">
-      <svg viewBox="0 0 24 24"><path d="M12 2L3 7v10l9 5 9-5V7L12 2zm0 2.18L19 8v8.82L12 20.82 5 16.82V8l7-3.82z"/></svg>
+      <img src="{{ asset('icons/ITLP_LOGO_APP.jpg') }}" alt="ITLP"/>
     </div>
-    <span class="brand-title">SGITLP</span>
+    <span class="brand-title">
+      SGITLP
+      @if(app()->environment('local'))
+        <span class="env-badge">Entorno Desarrollo</span>
+      @endif
+    </span>
     <div class="header-sep"></div>
 
     {{-- Breadcrumb dinámico: siempre arranca con "Panel principal".
@@ -255,10 +342,10 @@
 
     <div class="user-chip">
       <div class="user-avatar">
-        {{ auth()->check() ? strtoupper(substr(auth()->user()->name, 0, 2)) : 'US' }}
+        {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 2)) : 'US' }}
       </div>
       <span class="user-name">
-        {{ auth()->check() ? auth()->user()->name : 'Usuario' }}
+        {{ auth()->check() ? auth()->user()->nombre . ' ' . auth()->user()->apellido : 'Usuario' }}
       </span>
     </div>
   </div>
@@ -268,6 +355,36 @@
 <main>
   @yield('content')
 </main>
+
+<!-- ══ FAB ZONE ══ -->
+@hasSection('fab-form')
+<div id="fab-zone">
+  {{-- Botón cancelar edición (oculto por defecto, JS lo muestra en modo editar) --}}
+  <button
+    id="btn-fab-cancel"
+    type="button"
+    onclick="window.__fabCancelFn && window.__fabCancelFn()"
+  >
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+    Cancelar edición
+  </button>
+
+  {{-- Botón principal: guardar / confirmar / actualizar --}}
+  <button
+    id="btn-fab"
+    type="submit"
+    form="@yield('fab-form')"
+    @hasSection('fab-disabled') disabled @endif
+  >
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12"/>
+    </svg>
+    <span id="btn-fab-txt">@yield('fab-label', 'Confirmar')</span>
+  </button>
+</div>
+@endif
 
 @stack('scripts')
 </body>

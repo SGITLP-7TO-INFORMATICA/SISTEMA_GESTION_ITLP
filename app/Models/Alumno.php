@@ -6,30 +6,32 @@ use Illuminate\Database\Eloquent\Model;
 
 class Alumno extends Model
 {
+    protected $table = 'alumnos';
+
     protected $fillable = [
-        'nombre', 'apellido', 'curso_id', 'grupo_id',
+        'id_usuario', 'nombre', 'apellido', 'Genero', 'legajo',
+        'fecha_nacimiento', 'fecha_ingreso',
     ];
 
-    // Un alumno pertenece a un curso (ej: 7°A)
-    public function curso()
+    const CREATED_AT = 'fecha_creacion';
+    const UPDATED_AT = 'fecha_actualizacion';
+
+    // Los cursos del alumno van por la tabla MxM mxm_alumnos_alumnos_anios
+    public function cursos()
     {
-        return $this->belongsTo(Curso::class);
+        return $this->belongsToMany(
+            Curso::class,
+            'mxm_alumnos_alumnos_anios',
+            'id_Alumno',
+            'id_Curso'
+        );
     }
 
-    // Un alumno pertenece a un grupo taller (ej: Grupo 1)
-    public function grupo()
-    {
-        return $this->belongsTo(Grupo::class);
-    }
-
-    // Un alumno tiene muchos registros de asistencia a lo largo del año
     public function asistencias()
     {
-        return $this->hasMany(Asistencia::class);
+        return $this->hasMany(Asistencia::class, 'id_Alumno');
     }
 
-    // Accessor: nombre completo para mostrar en las listas
-    // Se llama como $alumno->nombre_completo
     public function getNombreCompletoAttribute(): string
     {
         return "{$this->apellido}, {$this->nombre}";

@@ -76,19 +76,6 @@
         padding: 0;
     }
 
-    /* Textura de grilla sutil en el fondo (solo con pseudo-elemento, no hay utilidad para esto) */
-    body::before {
-        content: '';
-        position: fixed;
-        inset: 0;
-        background-image:
-            linear-gradient(var(--color-dim) 1px, transparent 1px),
-            linear-gradient(90deg, var(--color-dim) 1px, transparent 1px);
-        background-size: 40px 40px;
-        pointer-events: none;
-        z-index: 0;
-        opacity: 0.5;
-    }
 
     /* El header, sidebar y main deben quedar por encima de la grilla */
     header,

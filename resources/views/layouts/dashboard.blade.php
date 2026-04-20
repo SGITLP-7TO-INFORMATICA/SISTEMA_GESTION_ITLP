@@ -163,13 +163,13 @@
         <span class="arrow">▶</span>
       </div>
       <div class="nav-subitems">
-        <a href="{{ route('docentes.tomar-lista') }}"
-           class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
-          Tomar lista
-        </a>
         <a href="{{ route('docentes.libro-temas') }}"
            class="nav-subitem {{ request()->routeIs('docentes.libro-temas') ? 'active' : '' }}">
           Libro de temas
+        </a>
+        <a href="{{ route('docentes.tomar-lista') }}"
+           class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
+          Tomar lista
         </a>
         <a href="#" class="nav-subitem">Reporte asistencias</a>
       </div>
