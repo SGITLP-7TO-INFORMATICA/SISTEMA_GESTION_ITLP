@@ -59,4 +59,11 @@ Route::middleware('auth')->group(function () {
     Route::post('/docentes/libro-temas', [DocenteController::class, 'guardarLibroTemas'])
          ->name('docentes.libro-temas.guardar');
 
+    // Exportar registros de clases a Excel
+    Route::get('/docentes/exportar-registros', [DocenteController::class, 'exportarRegistros'])
+         ->name('docentes.exportar-registros');
+
+    Route::post('/docentes/exportar-registros', [DocenteController::class, 'descargarExcel'])
+         ->name('docentes.exportar-registros.descargar');
+
 });

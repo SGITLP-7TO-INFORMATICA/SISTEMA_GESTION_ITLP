@@ -8,6 +8,12 @@ use App\Models\Alumno;
 use App\Models\MateriaDictada;
 use App\Models\RegistroClase;
 use App\Models\Asistencia;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
 class DocenteController extends Controller
 {
@@ -218,6 +224,287 @@ class DocenteController extends Controller
         $verRegistroId = request('registro_id') ?? session('last_registro_id');
 
         return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId'));
+    }
+
+    // ──────────────────────────────────────────────
+    // EXPORTAR REGISTROS A EXCEL
+    // ──────────────────────────────────────────────
+
+    public function exportarRegistros()
+    {
+        $dictados = $this->getDictados();
+        return view('docentes.exportar-registros', compact('dictados'));
+    }
+
+    public function descargarExcel(Request $request)
+    {
+        $request->validate([
+            'dictado_id' => 'required|integer',
+            'fecha_desde' => 'nullable|date',
+            'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
+        ]);
+
+        $docente = $this->getDocente();
+
+        // Obtener info del dictado
+        $dictado = DB::table('view_docentes_materias_dictadas')
+            ->where('DICTADO_ID', $request->dictado_id)
+            ->where('USUARIO_ID', auth()->id())
+            ->first();
+
+        abort_if(!$dictado, 403, 'Dictado no encontrado.');
+
+        // Obtener registros de clase filtrados
+        $query = DB::table('docentes_registro_clases')
+            ->where('Id_Dictado_Materia', $request->dictado_id)
+            ->orderBy('Fecha_Clase')
+            ->orderBy('Numero_Clase');
+
+        if ($request->filled('fecha_desde')) {
+            $query->where('Fecha_Clase', '>=', $request->fecha_desde);
+        }
+        if ($request->filled('fecha_hasta')) {
+            $query->where('Fecha_Clase', '<=', $request->fecha_hasta);
+        }
+
+        $registros = $query->get();
+
+        // Obtener alumnos del curso
+        $alumnos = DB::table('alumnos')
+            ->join('mxm_alumnos_alumnos_anios as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
+            ->where('mxm.id_Curso', $dictado->CURSO_ID)
+            ->orderBy('alumnos.apellido')
+            ->orderBy('alumnos.nombre')
+            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
+            ->get();
+
+        // Obtener todas las asistencias de esos registros
+        $registroIds = $registros->pluck('id')->toArray();
+        $asistencias = DB::table('alumnos_asistencias')
+            ->whereIn('Id_Registro_Clase', $registroIds)
+            ->get()
+            ->groupBy('Id_Registro_Clase');
+
+        // Etiquetas de estado
+        $estadoLabels = [1 => 'P', 2 => 'A', 3 => 'T', 4 => 'J', 5 => 'R'];
+
+        // ── Construir el Excel ──
+        $spreadsheet = new Spreadsheet();
+
+        // ══ Hoja 1: Libro de Temas ══
+        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1->setTitle('Libro de Temas');
+
+        $coloresHeader = ['FF1E3A5F', 'FF1E3A5F']; // azul oscuro
+        $fillHeader = ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']];
+        $fontHeader = ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 10];
+        $alignCenter = ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER];
+
+        $headers1 = ['N° Clase', 'Fecha', 'Objetivo de la Clase', 'Contenidos Vistos', 'Actividades Desarrolladas', 'Observaciones'];
+        foreach ($headers1 as $col => $label) {
+            $coord = Coordinate::stringFromColumnIndex($col + 1) . '1';
+            $cell = $sheet1->getCell($coord);
+            $cell->setValue($label);
+            $cell->getStyle()->applyFromArray([
+                'font' => $fontHeader,
+                'fill' => $fillHeader,
+                'alignment' => $alignCenter,
+            ]);
+        }
+
+        // Título en fila 1 como sub-encabezado de materia
+        $sheet1->insertNewRowBefore(1, 2);
+        $sheet1->mergeCells('A1:F1');
+        $sheet1->setCellValue('A1', strtoupper($dictado->MATERIA_NOMBRE) . ' — ' . $dictado->CURSO_NOMBRE);
+        $sheet1->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FF1D4ED8']],
+            'alignment' => $alignCenter,
+        ]);
+        $sheet1->mergeCells('A2:F2');
+        $periodoLabel = '';
+        if ($request->filled('fecha_desde') || $request->filled('fecha_hasta')) {
+            $periodoLabel = 'Período: ' . ($request->fecha_desde ?? '—') . ' al ' . ($request->fecha_hasta ?? '—');
+        } else {
+            $periodoLabel = 'Período: completo';
+        }
+        $sheet1->setCellValue('A2', $periodoLabel);
+        $sheet1->getStyle('A2')->applyFromArray([
+            'font' => ['italic' => true, 'size' => 10, 'color' => ['argb' => 'FF6B7280']],
+            'alignment' => $alignCenter,
+        ]);
+        $sheet1->getRowDimension(1)->setRowHeight(22);
+        $sheet1->getRowDimension(2)->setRowHeight(16);
+
+        // Fila de encabezados de columnas (fila 3)
+        $headerRow = 3;
+        foreach ($headers1 as $col => $label) {
+            $coord = Coordinate::stringFromColumnIndex($col + 1) . $headerRow;
+            $cell = $sheet1->getCell($coord);
+            $cell->setValue($label);
+            $cell->getStyle()->applyFromArray([
+                'font' => $fontHeader,
+                'fill' => $fillHeader,
+                'alignment' => $alignCenter,
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF374151']]],
+            ]);
+        }
+        $sheet1->getRowDimension($headerRow)->setRowHeight(18);
+
+        // Datos
+        foreach ($registros as $i => $reg) {
+            $row = $headerRow + 1 + $i;
+            $zebra = ($i % 2 === 0) ? 'FFF8FAFF' : 'FFEEF2FF';
+            $fillZebra = ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $zebra]];
+
+            $sheet1->getCell("A{$row}")->setValue($reg->Numero_Clase);
+            $sheet1->getCell("B{$row}")->setValue($reg->Fecha_Clase);
+            $sheet1->getCell("C{$row}")->setValue($reg->Objetivo_Clase);
+            $sheet1->getCell("D{$row}")->setValue($reg->Contenidos_Vistos);
+            $sheet1->getCell("E{$row}")->setValue($reg->Actividades_Desarrolladas);
+            $sheet1->getCell("F{$row}")->setValue($reg->Observaciones);
+
+            $sheet1->getStyle("A{$row}:F{$row}")->applyFromArray([
+                'fill' => $fillZebra,
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFD1D5DB']]],
+                'alignment' => ['vertical' => Alignment::VERTICAL_TOP, 'wrapText' => true],
+            ]);
+            $sheet1->getStyle("A{$row}:B{$row}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            $sheet1->getRowDimension($row)->setRowHeight(-1);
+        }
+
+        // Anchos de columnas hoja 1
+        $sheet1->getColumnDimension('A')->setWidth(10);
+        $sheet1->getColumnDimension('B')->setWidth(13);
+        $sheet1->getColumnDimension('C')->setWidth(40);
+        $sheet1->getColumnDimension('D')->setWidth(40);
+        $sheet1->getColumnDimension('E')->setWidth(40);
+        $sheet1->getColumnDimension('F')->setWidth(35);
+
+        // ══ Hoja 2: Asistencias Alumnos ══
+        $sheet2 = $spreadsheet->createSheet();
+        $sheet2->setTitle('Asistencias Alumnos');
+
+        // Título y período
+        $totalCols = 2 + count($alumnos);
+        $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
+
+        $sheet2->mergeCells("A1:{$lastColLetter}1");
+        $sheet2->setCellValue('A1', strtoupper($dictado->MATERIA_NOMBRE) . ' — ' . $dictado->CURSO_NOMBRE . ' — Asistencias');
+        $sheet2->getStyle('A1')->applyFromArray([
+            'font' => ['bold' => true, 'size' => 13, 'color' => ['argb' => 'FF1D4ED8']],
+            'alignment' => $alignCenter,
+        ]);
+        $sheet2->mergeCells("A2:{$lastColLetter}2");
+        $sheet2->setCellValue('A2', $periodoLabel);
+        $sheet2->getStyle('A2')->applyFromArray([
+            'font' => ['italic' => true, 'size' => 10, 'color' => ['argb' => 'FF6B7280']],
+            'alignment' => $alignCenter,
+        ]);
+
+        // Leyenda
+        $sheet2->mergeCells("A3:{$lastColLetter}3");
+        $sheet2->setCellValue('A3', 'P = Presente  |  A = Ausente  |  T = Tarde  |  J = Justificada  |  R = Retira Antes');
+        $sheet2->getStyle('A3')->applyFromArray([
+            'font' => ['size' => 9, 'color' => ['argb' => 'FF6B7280']],
+            'alignment' => $alignCenter,
+        ]);
+        $sheet2->getRowDimension(1)->setRowHeight(22);
+        $sheet2->getRowDimension(2)->setRowHeight(16);
+        $sheet2->getRowDimension(3)->setRowHeight(14);
+
+        // Encabezados: Clase | Fecha | [Alumno1] | [Alumno2] ...
+        $headerRow2 = 4;
+        $sheet2->getCell("A{$headerRow2}")->setValue('Clase');
+        $sheet2->getCell("B{$headerRow2}")->setValue('Fecha');
+        $sheet2->getStyle("A{$headerRow2}:B{$headerRow2}")->applyFromArray([
+            'font' => $fontHeader,
+            'fill' => $fillHeader,
+            'alignment' => $alignCenter,
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF374151']]],
+        ]);
+
+        foreach ($alumnos as $aIdx => $alumno) {
+            $col = $aIdx + 3;
+            $colLtr = Coordinate::stringFromColumnIndex($col);
+            $cell = $sheet2->getCell($colLtr . $headerRow2);
+            $cell->setValue($alumno->apellido . ', ' . $alumno->nombre);
+            $cell->getStyle()->applyFromArray([
+                'font' => $fontHeader,
+                'fill' => $fillHeader,
+                'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF374151']]],
+            ]);
+        }
+        $sheet2->getRowDimension($headerRow2)->setRowHeight(30);
+
+        // Datos de asistencia por clase
+        foreach ($registros as $i => $reg) {
+            $row = $headerRow2 + 1 + $i;
+            $zebra = ($i % 2 === 0) ? 'FFF8FAFF' : 'FFEEF2FF';
+            $fillZebra = ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $zebra]];
+
+            $sheet2->getCell("A{$row}")->setValue('Clase N°' . $reg->Numero_Clase);
+            $sheet2->getCell("B{$row}")->setValue($reg->Fecha_Clase);
+
+            $asistenciasClase = $asistencias->get($reg->id, collect())->keyBy('id_Alumno');
+
+            foreach ($alumnos as $aIdx => $alumno) {
+                $col = $aIdx + 3;
+                $asistencia = $asistenciasClase->get($alumno->id);
+                $estadoVal = $asistencia ? ($estadoLabels[$asistencia->Id_Estado] ?? '?') : '';
+                $colLtr2 = Coordinate::stringFromColumnIndex($col);
+                $cell = $sheet2->getCell($colLtr2 . $row);
+                $cell->setValue($estadoVal);
+
+                // Color por estado
+                $colorEstado = match($estadoVal) {
+                    'P' => 'FFD1FAE5', // verde claro
+                    'A' => 'FFFEE2E2', // rojo claro
+                    'T' => 'FFFEF3C7', // amarillo
+                    'J' => 'FFDBEAFE', // azul claro
+                    'R' => 'FFEDE9FE', // violeta
+                    default => $zebra,
+                };
+
+                $cell->getStyle()->applyFromArray([
+                    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $colorEstado]],
+                    'alignment' => $alignCenter,
+                    'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFD1D5DB']]],
+                ]);
+            }
+
+            $sheet2->getStyle("A{$row}:B{$row}")->applyFromArray([
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']],
+                'font' => ['color' => ['argb' => 'FFFFFFFF'], 'size' => 9],
+                'alignment' => $alignCenter,
+                'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FF374151']]],
+            ]);
+            $sheet2->getRowDimension($row)->setRowHeight(18);
+        }
+
+        // Anchos hoja 2
+        $sheet2->getColumnDimension('A')->setWidth(13);
+        $sheet2->getColumnDimension('B')->setWidth(13);
+        foreach ($alumnos as $aIdx => $alumno) {
+            $colLetter = Coordinate::stringFromColumnIndex($aIdx + 3);
+            $sheet2->getColumnDimension($colLetter)->setWidth(28);
+        }
+
+        // Fijar columnas A y B al hacer scroll horizontal
+        $sheet2->freezePane('C' . $headerRow2);
+
+        // ── Generar y descargar ──
+        $spreadsheet->setActiveSheetIndex(0);
+        $nombreArchivo = 'Registros_' . str_replace(' ', '_', $dictado->MATERIA_NOMBRE) . '_' . now()->format('Ymd') . '.xlsx';
+
+        $writer = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $nombreArchivo, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
     }
 
     // Crea o actualiza un registro de clase del libro de temas.

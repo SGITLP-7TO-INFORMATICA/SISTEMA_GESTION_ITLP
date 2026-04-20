@@ -171,7 +171,10 @@
            class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
           Tomar lista
         </a>
-        <a href="#" class="nav-subitem">Reporte asistencias</a>
+        <a href="{{ route('docentes.exportar-registros') }}"
+           class="nav-subitem {{ request()->routeIs('docentes.exportar-registros') ? 'active' : '' }}">
+          Exportar Registros Clases
+        </a>
       </div>
     </div>
 
