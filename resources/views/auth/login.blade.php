@@ -11,6 +11,7 @@
   <style>
     :root {
       --bg:          #0f1117;
+      --bg-transparent-50:          #0f1117b2;
       --surface:     #181c26;
       --surface2:    #1f2333;
       --border:      rgba(255,255,255,0.07);

@@ -45,10 +45,12 @@ Route::middleware('auth')->group(function () {
          ->name('docentes.tomar-lista.guardar');
 
     // Endpoint AJAX: devuelve JSON con los alumnos de un curso+grupo.
-    // Lo llama el JavaScript de la vista tomar-lista cuando el profe
-    // selecciona curso y grupo.
     Route::get('/docentes/alumnos', [DocenteController::class, 'getAlumnos'])
          ->name('docentes.alumnos');
+
+    // Endpoint AJAX: devuelve las asistencias de un registro de clase (para pre-llenar).
+    Route::get('/docentes/asistencias-registro', [DocenteController::class, 'getAsistenciasRegistro'])
+         ->name('docentes.asistencias-registro');
 
     // Libro de temas (GET muestra el form, POST guarda la entrada)
     Route::get('/docentes/libro-temas', [DocenteController::class, 'libroTemas'])
@@ -56,5 +58,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/docentes/libro-temas', [DocenteController::class, 'guardarLibroTemas'])
          ->name('docentes.libro-temas.guardar');
+
+    // Exportar registros de clases a Excel
+    Route::get('/docentes/exportar-registros', [DocenteController::class, 'exportarRegistros'])
+         ->name('docentes.exportar-registros');
+
+    Route::post('/docentes/exportar-registros', [DocenteController::class, 'descargarExcel'])
+         ->name('docentes.exportar-registros.descargar');
 
 });

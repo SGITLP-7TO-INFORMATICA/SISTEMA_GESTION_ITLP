@@ -2,38 +2,45 @@
 
 namespace App\Models;
 
-use Database\Factories\UserFactory;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
+
+    protected $table = 'usuarios';
+
+    // Columnas reales de la tabla usuarios
+    protected $fillable = [
+        'nombre_usuario', 'nombre', 'apellido', 'email', 'contrasenia',
+    ];
+
+    protected $hidden = [
+        'contrasenia', 'remember_token',
+    ];
+
+    // Nombres reales de las columnas de timestamps en la BD
+    const CREATED_AT = 'fecha_creacion';
+    const UPDATED_AT = 'fecha_actualizacion';
+
+    // Le dice a Laravel qué columna usar como contraseña para Auth::attempt()
+    public function getAuthPasswordName(): string
+    {
+        return 'contrasenia';
+    }
 
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
+            'contrasenia' => 'hashed',
         ];
     }
 
-    // Un docente tiene muchas asignaciones (materia + curso + grupo)
-    // Desde acá podemos saber qué materias/cursos/grupos le corresponden
-    public function docenteMaterias()
-    {
-        return $this->hasMany(DocenteMateria::class, 'user_id');
-    }
-
-    // Un docente tiene muchos registros de clase (asistencias + libro de temas)
+    // Un docente tiene muchos registros de clase
     public function registrosClase()
     {
-        return $this->hasMany(RegistroClase::class, 'docente_id');
+        return $this->hasMany(RegistroClase::class, 'id_Usuario_Verificador');
     }
 }
