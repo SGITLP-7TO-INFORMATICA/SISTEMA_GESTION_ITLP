@@ -12,13 +12,16 @@ class User extends Authenticatable
 
     protected $table = 'usuarios';
 
+    // Nombre real de la columna remember token en la BD
+    protected $rememberTokenName = 'token_web';
+
     // Columnas reales de la tabla usuarios
     protected $fillable = [
         'nombre_usuario', 'nombre', 'apellido', 'email', 'contrasenia',
     ];
 
     protected $hidden = [
-        'contrasenia', 'remember_token',
+        'contrasenia', 'token_web',
     ];
 
     // Nombres reales de las columnas de timestamps en la BD
