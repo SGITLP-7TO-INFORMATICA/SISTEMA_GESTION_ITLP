@@ -16,6 +16,7 @@ class RegistroClase extends Model
         'id_Docente_A_Cargo',
         'id_Usuario_Verificador',
         'Fecha_Clase',
+        'Numero_Clase',
         'Objetivo_Clase',
         'Contenidos_Vistos',
         'Actividades_Desarrolladas',

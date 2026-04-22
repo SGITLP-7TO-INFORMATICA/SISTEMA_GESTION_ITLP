@@ -11,149 +11,11 @@
 
 @push('styles')
 <style>
-  /* ── Selector de registro de clase ── */
-  .selector-wrapper {
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  .selector-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-  .selector-titulo   { font-size: 13px; font-weight: 500; color: var(--text); }
-  .selector-subtitulo { font-size: 11.5px; color: var(--muted); font-family: var(--font-mono); }
-
-  table.sel-table { width: 100%; border-collapse: collapse; }
-  table.sel-table thead th {
-    padding: 9px 16px;
-    font-size: 10.5px; font-weight: 600;
-    color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2); text-align: left;
-  }
-  table.sel-table tbody tr {
-    border-bottom: 1px solid var(--border);
-    transition: background .15s; cursor: pointer;
-  }
-  table.sel-table tbody tr:last-child { border-bottom: none; }
-  table.sel-table tbody tr:hover { background: rgba(59,130,246,0.06); }
-  table.sel-table tbody tr.row-selected { background: rgba(59,130,246,0.1); }
-  table.sel-table tbody td {
-    padding: 10px 16px; font-size: 12.5px; color: var(--text); vertical-align: middle;
-  }
-  .td-mono  { font-family: var(--font-mono); font-size: 12px; color: var(--muted); }
-  .tabla-empty { padding: 32px 20px; text-align: center; color: var(--muted); font-size: 13px; }
-
-  .badge-asist {
-    display: inline-block; font-size: 10px; font-family: var(--font-mono);
-    padding: 1px 8px; border-radius: 4px;
-  }
-  .badge-asist.con    { background: rgba(34,197,94,0.1);  color: var(--success); }
-  .badge-asist.sin    { background: rgba(255,255,255,0.05); color: var(--muted2); }
-
-  /* Ícono ojo (ver en libro de temas) */
-  .btn-ver-libro {
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 30px; height: 30px;
-    border-radius: 7px;
-    background: transparent;
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    cursor: pointer;
-    text-decoration: none;
-    transition: border-color .2s, color .2s, background .2s;
-    flex-shrink: 0;
-  }
-  .btn-ver-libro:hover {
-    border-color: var(--accent);
-    color: var(--accent2);
-    background: rgba(59,130,246,0.06);
-  }
-
-  /* Botón agregar al pie de la tabla */
-  .selector-footer {
-    padding: 12px 16px;
-    border-top: 1px solid var(--border);
-    background: var(--surface2);
-    display: flex;
-    justify-content: flex-end;
-  }
-  .btn-agregar {
-    display: inline-flex; align-items: center; gap: 7px;
-    padding: 8px 18px; border-radius: 8px;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    color: var(--muted);
-    font-family: var(--font); font-size: 12.5px; font-weight: 500;
-    text-decoration: none;
-    transition: border-color .2s, color .2s, background .2s;
-  }
-  .btn-agregar:hover {
-    border-color: var(--accent);
-    color: var(--accent2);
-    background: rgba(59,130,246,0.06);
-  }
-
-  /* ── Info card del registro seleccionado ── */
-  .registro-info-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-    margin-bottom: 20px;
-  }
-  .registro-info-header {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(59,130,246,0.06);
-  }
-  .registro-info-label {
-    font-size: 10.5px; font-weight: 700;
-    color: var(--accent2); text-transform: uppercase; letter-spacing: 0.1em;
-  }
-  .registro-info-body { display: flex; flex-wrap: wrap; }
-  .reg-field {
-    display: flex; flex-direction: column; gap: 3px;
-    padding: 14px 24px;
-    border-right: 1px solid var(--border);
-    flex: 1; min-width: 160px;
-  }
-  .reg-field:last-child { border-right: none; }
-  .reg-field-label {
-    font-size: 9.5px; font-weight: 700;
-    color: var(--muted2); text-transform: uppercase; letter-spacing: 0.12em;
-  }
-  .reg-field-value { font-size: 13px; color: var(--text); font-weight: 500; }
-  .reg-field-value.mono { font-family: var(--font-mono); font-size: 12.5px; color: var(--muted); }
-
-  /* ── Status bar ── */
-  .action-bar {
-    display: flex; align-items: center;
-    justify-content: flex-end; gap: 12px;
-    padding-top: 4px;
-  }
-  .status-msg { font-size: 12px; color: var(--muted); margin-right: auto; }
+  /* Solo estados manipulados por JS */
+  .row-selected { background: rgba(59,130,246,0.1); }
+  .status-msg            { font-size: 12px; color: var(--muted); margin-right: auto; }
   .status-msg.completo   { color: var(--success); }
   .status-msg.incompleto { color: var(--warning); }
-
-  /* ── Alertas ── */
-  .alert-success {
-    background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
-    border-radius: 8px; padding: 10px 16px;
-    font-size: 13px; color: var(--success);
-    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
-  }
-  .alert-info {
-    background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2);
-    border-radius: 8px; padding: 10px 16px;
-    font-size: 13px; color: var(--muted);
-    margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
-  }
 </style>
 @endpush
 
@@ -165,7 +27,7 @@
 @section('content')
 
 @if (session('success'))
-  <div class="alert-success fade-1">
+  <div class="flex items-center gap-2 bg-success/[0.08] border border-success/25 rounded-lg px-4 py-[10px] text-[13px] text-success mb-4 fade-1">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
       <polyline points="20 6 9 17 4 12"/>
     </svg>
@@ -183,35 +45,35 @@
 
   {{-- ── SELECTOR DE REGISTRO DE CLASE ── --}}
   @if(! $preseleccionado)
-  <div class="selector-wrapper fade-1">
-    <div class="selector-header">
-      <span class="selector-titulo">Seleccioná el registro de clase al que querés tomar asistencia</span>
-      <span class="selector-subtitulo">{{ $registros->count() }} {{ $registros->count() === 1 ? 'clase registrada' : 'clases registradas' }}</span>
+  <div class="border border-dim rounded-[10px] overflow-hidden mb-5 fade-1">
+    <div class="flex items-center justify-between px-5 py-3 border-b border-dim bg-surface2">
+      <span class="text-[13px] font-medium text-content">Seleccioná el registro de clase al que querés tomar asistencia</span>
+      <span class="text-[11.5px] text-muted font-mono">{{ $registros->count() }} {{ $registros->count() === 1 ? 'clase registrada' : 'clases registradas' }}</span>
     </div>
 
     @if($registros->isEmpty())
-      <div class="tabla-empty">
+      <div class="p-8 text-center text-muted text-[13px]">
         No tenés registros de clase cargados en el libro de temas aún.
         <br><br>
-        <a href="{{ route('docentes.libro-temas') }}" style="color:var(--accent2); text-decoration:none;">
+        <a href="{{ route('docentes.libro-temas') }}" class="text-accent2 no-underline">
           → Ir al libro de temas para crear uno
         </a>
       </div>
     @else
-    <table class="sel-table">
+    <table class="w-full border-collapse">
       <thead>
         <tr>
-          <th style="width:110px">Fecha</th>
-          <th>Materia / Curso</th>
-          <th style="width:120px">Horario</th>
-          <th style="width:110px">Asistencia</th>
-          <th style="width:48px"></th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Fecha</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Materia / Curso</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[120px]">Horario</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Asistencia</th>
+          <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[48px]"></th>
         </tr>
       </thead>
       <tbody>
         @foreach ($registros as $reg)
           <tr
-            class="fila-selector"
+            class="fila-selector border-b border-dim last:border-b-0 transition-colors duration-150 cursor-pointer hover:bg-accent/[0.06]"
             onclick="seleccionarRegistro(this)"
             data-registro-id="{{ $reg->REGISTRO_CLASE_ID }}"
             data-dictado-id="{{ $reg->REGISTRO_CLASE_DICTADO_ID ?? '' }}"
@@ -222,26 +84,25 @@
             data-hasta="{{ $reg->REGISTRO_CLASE_HORA_HASTA }}"
             data-tiene-asistencias="{{ in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia) ? '1' : '0' }}"
           >
-            <td class="td-mono">{{ \Carbon\Carbon::parse($reg->REGISTRO_CLASE_FECHA)->format('d/m/Y') }}</td>
-            <td>{{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CURSO ?? ($reg->DOCENTE_NOMBRE ?? '—'), 70) }}</td>
-            <td class="td-mono">
+            <td class="px-4 py-[10px] text-[12px] text-muted font-mono align-middle">{{ \Carbon\Carbon::parse($reg->REGISTRO_CLASE_FECHA)->format('d/m/Y') }}</td>
+            <td class="px-4 py-[10px] text-[12.5px] text-content align-middle">{{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CURSO ?? ($reg->DOCENTE_NOMBRE ?? '—'), 70) }}</td>
+            <td class="px-4 py-[10px] text-[12px] text-muted font-mono align-middle">
               @if($reg->REGISTRO_CLASE_HORA_DESDE)
                 {{ substr($reg->REGISTRO_CLASE_HORA_DESDE, 0, 5) }} – {{ substr($reg->REGISTRO_CLASE_HORA_HASTA, 0, 5) }}
               @else —
               @endif
             </td>
-            <td>
+            <td class="px-4 py-[10px] align-middle">
               @if(in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia))
-                <span class="badge-asist con">✓ Cargada</span>
+                <span class="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-success/10 text-success">✓ Cargada</span>
               @else
-                <span class="badge-asist sin">Sin cargar</span>
+                <span class="inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-white/5 text-muted2">Sin cargar</span>
               @endif
             </td>
-            <td onclick="event.stopPropagation()">
-              {{-- Ojo: ver registro en libro de temas (no dispara seleccionarRegistro) --}}
+            <td class="px-4 py-[10px] align-middle" onclick="event.stopPropagation()">
               <a
                 href="{{ route('docentes.libro-temas') }}?registro_id={{ $reg->REGISTRO_CLASE_ID }}"
-                class="btn-ver-libro"
+                class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] bg-transparent border border-dim2 text-muted no-underline transition-[border-color,color,background] duration-200 hover:border-accent hover:text-accent2 hover:bg-accent/[0.06] shrink-0"
                 title="Ver en libro de temas"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -255,9 +116,8 @@
       </tbody>
     </table>
 
-    {{-- Pie de tabla: botón para ir a crear un nuevo registro en libro de temas --}}
-    <div class="selector-footer">
-      <a href="{{ route('docentes.libro-temas') }}" class="btn-agregar">
+    <div class="px-4 py-3 border-t border-dim bg-surface2 flex justify-end">
+      <a href="{{ route('docentes.libro-temas') }}" class="inline-flex items-center gap-[7px] px-[18px] py-2 rounded-lg bg-surface border border-dim2 text-muted font-sans text-[12.5px] font-medium no-underline transition-[border-color,color,background] duration-200 hover:border-accent hover:text-accent2 hover:bg-accent/[0.06]">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
@@ -269,34 +129,38 @@
   </div>
   @endif
 
-  {{-- ── INFO CARD del registro seleccionado (oculto hasta que se elige, o pre-visible si viene de libro-temas) ── --}}
-  <div id="registro-info-card" class="registro-info-card fade-2" style="{{ $preseleccionado ? '' : 'display:none' }}">
-    <div class="registro-info-header">
+  {{-- ── INFO CARD del registro seleccionado ── --}}
+  <div id="registro-info-card" class="bg-surface2 border border-dim rounded-[10px] overflow-hidden mb-5 fade-2" style="{{ $preseleccionado ? '' : 'display:none' }}">
+    <div class="flex items-center gap-[10px] px-5 py-[10px] border-b border-dim bg-accent/[0.06]">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
       </svg>
-      <span class="registro-info-label">Registro de clase seleccionado</span>
-      <span id="badge-editando" style="margin-left:auto; display:{{ $tieneAsistencias ? 'inline-flex' : 'none' }}; font-size:10.5px; font-weight:600; color:var(--warning); font-family:var(--font-mono); background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); border-radius:4px; padding:2px 8px; align-items:center; gap:5px;">
+      <span class="text-[10.5px] font-bold text-accent2 uppercase tracking-[0.1em]">Registro de clase seleccionado</span>
+      <span
+        id="badge-editando"
+        class="ml-auto inline-flex items-center gap-[5px] text-[10.5px] font-semibold text-warning font-mono bg-warning/10 border border-warning/30 rounded px-2 py-0.5"
+        style="display:{{ $tieneAsistencias ? 'inline-flex' : 'none' }}"
+      >
         Editando asistencia existente
       </span>
     </div>
-    <div class="registro-info-body">
-      <div class="reg-field" style="flex:3; min-width:260px">
-        <span class="reg-field-label">Clase dictada</span>
-        <span class="reg-field-value" id="info-materia">
+    <div class="flex flex-wrap">
+      <div class="flex flex-col gap-[3px] px-6 py-[14px] border-r border-dim [flex:3] min-w-[260px]">
+        <span class="text-[9.5px] font-bold text-muted2 uppercase tracking-[0.12em]">Clase dictada</span>
+        <span class="text-[13px] text-content font-medium" id="info-materia">
           {{ $preseleccionado ? ($dictadoInfo->MATERIA_NOMBRE . ' — ' . $dictadoInfo->CURSO_NOMBRE) : '' }}
         </span>
       </div>
-      <div class="reg-field">
-        <span class="reg-field-label">Fecha</span>
-        <span class="reg-field-value mono" id="info-fecha">
+      <div class="flex flex-col gap-[3px] px-6 py-[14px] border-r border-dim flex-1 min-w-[160px]">
+        <span class="text-[9.5px] font-bold text-muted2 uppercase tracking-[0.12em]">Fecha</span>
+        <span class="text-[12.5px] text-muted font-mono font-medium" id="info-fecha">
           {{ $preseleccionado ? \Carbon\Carbon::parse($registroClase->Fecha_Clase)->format('d/m/Y') : '' }}
         </span>
       </div>
-      <div class="reg-field" id="info-horario-wrap" style="{{ ($preseleccionado && $dictadoInfo->Horario_Desde) ? '' : 'display:none' }}">
-        <span class="reg-field-label">Horario</span>
-        <span class="reg-field-value mono" id="info-horario">
+      <div id="info-horario-wrap" class="flex flex-col gap-[3px] px-6 py-[14px] flex-1 min-w-[160px]" style="{{ ($preseleccionado && $dictadoInfo->Horario_Desde) ? '' : 'display:none' }}">
+        <span class="text-[9.5px] font-bold text-muted2 uppercase tracking-[0.12em]">Horario</span>
+        <span class="text-[12.5px] text-muted font-mono font-medium" id="info-horario">
           {{ $preseleccionado && $dictadoInfo->Horario_Desde
               ? substr($dictadoInfo->Horario_Desde, 0, 5) . ' – ' . substr($dictadoInfo->Horario_Hasta, 0, 5)
               : '' }}
@@ -311,7 +175,7 @@
   </div>
 
   {{-- ── BARRA DE ESTADO ── --}}
-  <div class="action-bar fade-3" id="action-bar" style="{{ $preseleccionado ? '' : 'display:none' }}">
+  <div class="flex items-center justify-end gap-3 pt-1 fade-3" id="action-bar" style="{{ $preseleccionado ? '' : 'display:none' }}">
     <span class="status-msg" id="status-msg">Cargando alumnos…</span>
   </div>
 

@@ -11,138 +11,7 @@
 
 @push('styles')
 <style>
-  /* ── Reutilizando el sistema de formulario del libro de temas ── */
-  .form-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-  .form-card-body {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .field-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .field-row + .field-row { border-top: 1px solid var(--border); padding-top: 14px; }
-
-  .field-block {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    flex: 1;
-    min-width: 160px;
-  }
-  .field-block.wide   { flex: 3; min-width: 280px; }
-  .field-block.narrow { flex: 0 0 80px; }
-  .field-block.date-field { flex: 0 0 180px; }
-
-  .field-label {
-    font-size: 10px; font-weight: 700;
-    color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em;
-  }
-  .field-label span { color: var(--danger); margin-left: 2px; }
-
-  .field-input,
-  .field-select,
-  .field-date {
-    width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 13px;
-    padding: 8px 12px;
-    outline: none;
-    transition: border-color .2s, box-shadow .2s;
-  }
-  .field-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
-  .field-input:focus, .field-select:focus, .field-date:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow);
-  }
-  .field-error { font-size: 11px; color: var(--danger); margin-top: 2px; }
-
-  /* ── Preview info ── */
-  .info-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    display: flex;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  .info-icon {
-    width: 40px; height: 40px; flex-shrink: 0;
-    background: var(--accent-glow);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--accent2);
-  }
-  .info-icon svg { width: 20px; height: 20px; }
-  .info-text { flex: 1; }
-  .info-title { font-size: 13.5px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
-  .info-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
-  .info-desc strong { color: var(--accent2); font-weight: 500; }
-
-  /* ── Hojas preview ── */
-  .sheets-preview {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  .sheet-card {
-    flex: 1; min-width: 220px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-  }
-  .sheet-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent2);
-    background: var(--accent-glow);
-    border-radius: 6px;
-    padding: 3px 10px;
-    margin-bottom: 10px;
-    font-family: var(--font-mono);
-  }
-  .sheet-desc { font-size: 12px; color: var(--muted); line-height: 1.65; }
-  .sheet-cols {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .sheet-col-item {
-    font-size: 11px;
-    color: var(--muted);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  .sheet-col-item::before {
-    content: '';
-    width: 5px; height: 5px;
-    background: var(--accent);
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  /* ── Btn verde descarga ── */
+  /* FAB verde para descarga — override del layout con !important */
   #btn-fab {
     background: #16a34a !important;
     box-shadow: 0 4px 24px rgba(22,163,74,0.45), 0 1px 4px rgba(0,0,0,0.4) !important;
@@ -162,10 +31,9 @@
   </div>
 </div>
 
-{{-- Alertas de error --}}
 @if ($errors->any())
-  <div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-start;color:#fca5a5;font-size:13px;" class="fade-1">
-    <svg width="16" height="16" style="margin-top:1px;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <div class="flex items-start gap-[10px] bg-danger/10 border border-danger/25 rounded-[10px] px-[18px] py-[14px] mb-[18px] text-[#fca5a5] text-[13px] fade-1">
+    <svg width="16" height="16" class="mt-px shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
     <div>
       @foreach($errors->all() as $error)
         <div>{{ $error }}</div>
@@ -174,7 +42,6 @@
   </div>
 @endif
 
-{{-- Formulario principal --}}
 <form id="form-exportar" method="POST" action="{{ route('docentes.exportar-registros.descargar') }}">
   @csrf
 
@@ -183,19 +50,19 @@
       <span class="abm-panel-title">Parámetros de exportación</span>
     </div>
     <div class="abm-panel-body">
-      <div class="form-card">
-        <div class="form-card-body">
+      <div class="bg-surface2 border border-dim rounded-[10px] overflow-hidden">
+        <div class="p-6 flex flex-col gap-[14px]">
 
           {{-- Fila 1: Selección de materia --}}
-          <div class="field-row">
-            <div class="field-block wide">
-              <label class="field-label" for="dictado_id">
-                Materia dictada <span>*</span>
+          <div class="flex items-start gap-3 flex-wrap">
+            <div class="flex flex-col gap-[5px] [flex:3] min-w-[280px]">
+              <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="dictado_id">
+                Materia dictada <span class="text-danger ml-0.5">*</span>
               </label>
               <select
                 id="dictado_id"
                 name="dictado_id"
-                class="field-select"
+                class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
                 required
               >
                 <option value="">— Seleccioná una materia —</option>
@@ -206,42 +73,42 @@
                 @endforeach
               </select>
               @error('dictado_id')
-                <div class="field-error">{{ $message }}</div>
+                <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
             </div>
           </div>
 
           {{-- Fila 2: Rango de fechas --}}
-          <div class="field-row">
-            <div class="field-block date-field">
-              <label class="field-label" for="fecha_desde">Fecha desde</label>
+          <div class="flex items-start gap-3 flex-wrap border-t border-dim pt-[14px]">
+            <div class="flex flex-col gap-[5px] basis-[180px] shrink-0 grow-0">
+              <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="fecha_desde">Fecha desde</label>
               <input
                 type="date"
                 id="fecha_desde"
                 name="fecha_desde"
-                class="field-date"
+                class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
                 value="{{ old('fecha_desde') }}"
               />
               @error('fecha_desde')
-                <div class="field-error">{{ $message }}</div>
+                <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
             </div>
-            <div class="field-block date-field">
-              <label class="field-label" for="fecha_hasta">Fecha hasta</label>
+            <div class="flex flex-col gap-[5px] basis-[180px] shrink-0 grow-0">
+              <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="fecha_hasta">Fecha hasta</label>
               <input
                 type="date"
                 id="fecha_hasta"
                 name="fecha_hasta"
-                class="field-date"
+                class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
                 value="{{ old('fecha_hasta') }}"
               />
               @error('fecha_hasta')
-                <div class="field-error">{{ $message }}</div>
+                <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
             </div>
-            <div class="field-block" style="justify-content:flex-end;padding-top:18px;">
-              <p style="font-size:11.5px;color:var(--muted);line-height:1.5;">
-                Si no especificás fechas, se exportan <strong style="color:var(--text)">todos los registros</strong> de la materia seleccionada.
+            <div class="flex flex-col gap-[5px] flex-1 min-w-[160px] justify-end pt-[18px]">
+              <p class="text-[11.5px] text-muted leading-[1.5]">
+                Si no especificás fechas, se exportan <strong class="text-content font-medium">todos los registros</strong> de la materia seleccionada.
               </p>
             </div>
           </div>
@@ -253,10 +120,10 @@
 </form>
 
 {{-- Info de las hojas del excel --}}
-<div class="fade-3" style="margin-bottom:18px;">
-  <div class="info-card" style="margin-bottom:14px;">
-    <div class="info-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+<div class="fade-3 mb-[18px]">
+  <div class="bg-surface2 border border-dim rounded-[10px] p-5 flex items-start gap-4 mb-[14px]">
+    <div class="w-10 h-10 shrink-0 bg-glow rounded-[10px] flex items-center justify-center text-accent2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
         <polyline points="14 2 14 8 20 8"/>
         <line x1="16" y1="13" x2="8" y2="13"/>
@@ -264,39 +131,36 @@
         <polyline points="10 9 9 9 8 9"/>
       </svg>
     </div>
-    <div class="info-text">
-      <div class="info-title">El archivo Excel contendrá 2 hojas</div>
-      <div class="info-desc">
-        El reporte incluye todos los registros del <strong>Libro de Temas</strong> y la grilla completa de <strong>Asistencias</strong> para la materia y período seleccionados.
+    <div class="flex-1">
+      <div class="text-[13.5px] font-semibold text-content mb-1">El archivo Excel contendrá 2 hojas</div>
+      <div class="text-[12px] text-muted leading-relaxed">
+        El reporte incluye todos los registros del <strong class="text-accent2 font-medium">Libro de Temas</strong> y la grilla completa de <strong class="text-accent2 font-medium">Asistencias</strong> para la materia y período seleccionados.
       </div>
     </div>
   </div>
 
-  <div class="sheets-preview">
-    <div class="sheet-card">
-      <div class="sheet-tab">
+  <div class="flex gap-3 flex-wrap">
+    <div class="flex-1 min-w-[220px] bg-surface border border-dim rounded-[10px] p-[18px]">
+      <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent2 bg-glow rounded-md px-[10px] py-[3px] mb-[10px] font-mono">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
         Hoja 1 — Libro de Temas
       </div>
-      <div class="sheet-desc">Cada fila es un registro de clase dictada.</div>
-      <div class="sheet-cols">
-        <div class="sheet-col-item">N° de Clase</div>
-        <div class="sheet-col-item">Fecha</div>
-        <div class="sheet-col-item">Objetivo de la Clase</div>
-        <div class="sheet-col-item">Contenidos Vistos</div>
-        <div class="sheet-col-item">Actividades Desarrolladas</div>
-        <div class="sheet-col-item">Observaciones</div>
+      <div class="text-[12px] text-muted leading-[1.65]">Cada fila es un registro de clase dictada.</div>
+      <div class="mt-[10px] flex flex-col gap-1">
+        @foreach(['N° de Clase','Fecha','Objetivo de la Clase','Contenidos Vistos','Actividades Desarrolladas','Observaciones'] as $col)
+          <div class="text-[11px] text-muted flex items-center gap-1.5 before:content-[''] before:w-[5px] before:h-[5px] before:bg-accent before:rounded-full before:shrink-0">{{ $col }}</div>
+        @endforeach
       </div>
     </div>
 
-    <div class="sheet-card">
-      <div class="sheet-tab">
+    <div class="flex-1 min-w-[220px] bg-surface border border-dim rounded-[10px] p-[18px]">
+      <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent2 bg-glow rounded-md px-[10px] py-[3px] mb-[10px] font-mono">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
         Hoja 2 — Asistencias Alumnos
       </div>
-      <div class="sheet-desc">
+      <div class="text-[12px] text-muted leading-[1.65]">
         Cada columna es un alumno del curso. Cada fila es una clase (N° y fecha).<br>
-        <span style="font-family:var(--font-mono);font-size:11px;">
+        <span class="font-mono text-[11px]">
           P = Presente &nbsp;·&nbsp; A = Ausente &nbsp;·&nbsp; T = Tarde &nbsp;·&nbsp; J = Justificada &nbsp;·&nbsp; R = Retira Antes
         </span>
       </div>

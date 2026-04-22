@@ -1,230 +1,152 @@
-{{-- Indicamos que esta vista usa el layout del dashboard --}}
 @extends('layouts.dashboard')
 
 @section('title', 'Panel principal')
 
 @section('content')
 
-{{-- Estilos específicos de esta página (se inyectan en @stack('styles') del layout) --}}
-@push('styles')
-<style>
-  .page-header {
-    display: flex; align-items: flex-end; justify-content: space-between;
-    margin-bottom: 24px;
-  }
-  .page-title    { font-family: var(--font-display); font-size: 22px; color: var(--text); }
-  .page-subtitle { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-  .date-chip {
-    font-size: 11.5px; color: var(--muted); font-family: var(--font-mono);
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 5px 12px; border-radius: 20px;
-  }
-
-  /* Tarjetas de estadísticas */
-  .stats-row {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: 14px; margin-bottom: 24px;
-  }
-  .stat-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 16px 18px;
-    display: flex; flex-direction: column; gap: 8px;
-    transition: border-color .2s;
-  }
-  .stat-card:hover { border-color: var(--border2); }
-  .stat-header { display: flex; align-items: center; justify-content: space-between; }
-  .stat-label  { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 500; }
-  .stat-icon   { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 13px; }
-  .stat-value  { font-size: 26px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; font-family: var(--font-mono); }
-  .stat-delta  { font-size: 11.5px; color: var(--success); }
-
-  /* Grid principal */
-  .content-grid { display: grid; grid-template-columns: 1fr 300px; gap: 18px; }
-
-  /* Panel genérico */
-  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-  .panel-head {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 18px; border-bottom: 1px solid var(--border);
-  }
-  .panel-title  { font-size: 13px; font-weight: 500; color: var(--text); }
-  .panel-action { font-size: 11.5px; color: var(--accent2); cursor: pointer; transition: opacity .15s; }
-  .panel-action:hover { opacity: 0.75; }
-
-  /* Lista de eventos */
-  .event-item {
-    display: flex; align-items: flex-start; gap: 14px;
-    padding: 12px 18px; border-bottom: 1px solid var(--border);
-    transition: background .15s;
-  }
-  .event-item:last-child { border-bottom: none; }
-  .event-item:hover { background: rgba(255,255,255,0.025); }
-
-  .event-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
-  .dot-info    { background: var(--info);    box-shadow: 0 0 6px var(--info); }
-  .dot-success { background: var(--success); box-shadow: 0 0 6px var(--success); }
-  .dot-warning { background: var(--warning); box-shadow: 0 0 6px var(--warning); }
-  .dot-danger  { background: var(--danger);  box-shadow: 0 0 6px var(--danger); }
-  .dot-muted   { background: var(--muted2); }
-
-  .event-body  { flex: 1; }
-  .event-title { font-size: 13px; font-weight: 500; color: var(--text); line-height: 1.3; }
-  .event-meta  { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
-  .event-time  { font-size: 10.5px; color: var(--muted2); font-family: var(--font-mono); white-space: nowrap; margin-top: 3px; }
-
-  /* Paneles laterales */
-  .side-panels { display: flex; flex-direction: column; gap: 18px; }
-
-  .quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 14px; }
-  .quick-btn {
-    display: flex; flex-direction: column; align-items: center; gap: 7px;
-    padding: 14px 8px; border: 1px solid var(--border); border-radius: 8px;
-    cursor: pointer; transition: border-color .15s, background .15s; text-align: center;
-  }
-  .quick-btn:hover { border-color: var(--accent); background: var(--accent-glow); }
-  .quick-icon  { font-size: 20px; }
-  .quick-label { font-size: 11px; color: var(--muted); line-height: 1.3; }
-
-  .activity-item {
-    display: flex; align-items: center; gap: 10px;
-    padding: 9px 14px; transition: background .15s;
-  }
-  .activity-item:hover { background: rgba(255,255,255,0.025); }
-  .activity-avatar {
-    width: 26px; height: 26px; border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 600; color: #fff; flex-shrink: 0;
-  }
-  .activity-text { flex: 1; font-size: 11.5px; color: var(--muted); line-height: 1.4; }
-  .activity-text strong { color: var(--text); font-weight: 500; }
-  .activity-when { font-size: 10px; color: var(--muted2); font-family: var(--font-mono); }
-</style>
-@endpush
-
 {{-- ── Tarjetas de estadísticas ── --}}
-<div class="stats-row fade-2">
-  <div class="card-stat">
-    <div class="stat-header">
-      <span class="stat-label">Alumnos activos</span>
-      <div class="stat-icon" style="background:rgba(59,130,246,0.12)">👤</div>
+<div class="grid grid-cols-4 gap-[14px] mb-6 fade-2">
+
+  <div class="bg-surface border border-dim rounded-[10px] p-[16px_18px] flex flex-col gap-2 transition-[border-color] duration-200 hover:border-dim2">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] text-muted uppercase tracking-[0.1em] font-medium">Alumnos activos</span>
+      <div class="w-7 h-7 rounded-[7px] flex items-center justify-center text-[13px]" style="background:rgba(59,130,246,0.12)">👤</div>
     </div>
-    <div class="stat-value">482</div>
-    <div class="stat-delta">↑ 12 respecto al año anterior</div>
+    <div class="text-[26px] font-semibold text-content tracking-[-0.02em] font-mono">482</div>
+    <div class="text-[11.5px] text-success">↑ 12 respecto al año anterior</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-header">
-      <span class="stat-label">Docentes</span>
-      <div class="stat-icon" style="background:rgba(34,197,94,0.12)">🎓</div>
+
+  <div class="bg-surface border border-dim rounded-[10px] p-[16px_18px] flex flex-col gap-2 transition-[border-color] duration-200 hover:border-dim2">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] text-muted uppercase tracking-[0.1em] font-medium">Docentes</span>
+      <div class="w-7 h-7 rounded-[7px] flex items-center justify-center text-[13px]" style="background:rgba(34,197,94,0.12)">🎓</div>
     </div>
-    <div class="stat-value">38</div>
-    <div class="stat-delta">↑ 3 incorporaciones este año</div>
+    <div class="text-[26px] font-semibold text-content tracking-[-0.02em] font-mono">38</div>
+    <div class="text-[11.5px] text-success">↑ 3 incorporaciones este año</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-header">
-      <span class="stat-label">Cursos activos</span>
-      <div class="stat-icon" style="background:rgba(245,158,11,0.12)">📚</div>
+
+  <div class="bg-surface border border-dim rounded-[10px] p-[16px_18px] flex flex-col gap-2 transition-[border-color] duration-200 hover:border-dim2">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] text-muted uppercase tracking-[0.1em] font-medium">Cursos activos</span>
+      <div class="w-7 h-7 rounded-[7px] flex items-center justify-center text-[13px]" style="background:rgba(245,158,11,0.12)">📚</div>
     </div>
-    <div class="stat-value">17</div>
-    <div class="stat-delta">3 turnos · orientación informática</div>
+    <div class="text-[26px] font-semibold text-content tracking-[-0.02em] font-mono">17</div>
+    <div class="text-[11.5px] text-success">3 turnos · orientación informática</div>
   </div>
-  <div class="stat-card">
-    <div class="stat-header">
-      <span class="stat-label">Eventos hoy</span>
-      <div class="stat-icon" style="background:rgba(239,68,68,0.12)">📅</div>
+
+  <div class="bg-surface border border-dim rounded-[10px] p-[16px_18px] flex flex-col gap-2 transition-[border-color] duration-200 hover:border-dim2">
+    <div class="flex items-center justify-between">
+      <span class="text-[11px] text-muted uppercase tracking-[0.1em] font-medium">Eventos hoy</span>
+      <div class="w-7 h-7 rounded-[7px] flex items-center justify-center text-[13px]" style="background:rgba(239,68,68,0.12)">📅</div>
     </div>
-    <div class="stat-value">5</div>
-    <div class="stat-delta">2 requieren atención</div>
+    <div class="text-[26px] font-semibold text-content tracking-[-0.02em] font-mono">5</div>
+    <div class="text-[11.5px] text-success">2 requieren atención</div>
   </div>
+
 </div>
 
 {{-- ── Grid: eventos + lateral ── --}}
-<div class="content-grid fade-3">
+<div class="grid grid-cols-[1fr_300px] gap-[18px] fade-3">
 
   {{-- Panel de eventos --}}
-  <div class="panel">
-    <div class="panel-head">
-      <span class="panel-title">Eventos y notificaciones</span>
-      <span class="panel-action">Ver todos →</span>
+  <div class="bg-surface border border-dim rounded-[10px] overflow-hidden">
+    <div class="flex items-center justify-between px-[18px] py-[14px] border-b border-dim">
+      <span class="text-[13px] font-medium text-content">Eventos y notificaciones</span>
+      <span class="text-[11.5px] text-accent2 cursor-pointer transition-opacity duration-150 hover:opacity-75">Ver todos →</span>
     </div>
 
-    <div class="event-item">
-      <div class="event-dot dot-danger"></div>
-      <div class="event-body">
-        <div class="event-title">Planilla de horarios pendiente de validación</div>
-        <div class="event-meta">Preceptoría · 2do año división B — errores en columnas del miércoles.</div>
+    <div class="flex items-start gap-[14px] px-[18px] py-3 border-b border-dim hover:bg-white/[0.025] transition-colors duration-150">
+      <div class="w-[9px] h-[9px] rounded-full mt-1 shrink-0 bg-danger shadow-[0_0_6px_var(--color-danger)]"></div>
+      <div class="flex-1">
+        <div class="text-[13px] font-medium text-content leading-[1.3]">Planilla de horarios pendiente de validación</div>
+        <div class="text-[11.5px] text-muted mt-[3px]">Preceptoría · 2do año división B — errores en columnas del miércoles.</div>
       </div>
-      <div class="event-time">hace 12 min</div>
+      <div class="text-[10.5px] text-muted2 font-mono whitespace-nowrap mt-[3px]">hace 12 min</div>
     </div>
 
-    <div class="event-item">
-      <div class="event-dot dot-warning"></div>
-      <div class="event-body">
-        <div class="event-title">Acto del 9 de julio: confirmar lista de participantes</div>
-        <div class="event-meta">Dirección · faltan 7 docentes por confirmar asistencia.</div>
+    <div class="flex items-start gap-[14px] px-[18px] py-3 border-b border-dim hover:bg-white/[0.025] transition-colors duration-150">
+      <div class="w-[9px] h-[9px] rounded-full mt-1 shrink-0 bg-warning shadow-[0_0_6px_var(--color-warning)]"></div>
+      <div class="flex-1">
+        <div class="text-[13px] font-medium text-content leading-[1.3]">Acto del 9 de julio: confirmar lista de participantes</div>
+        <div class="text-[11.5px] text-muted mt-[3px]">Dirección · faltan 7 docentes por confirmar asistencia.</div>
       </div>
-      <div class="event-time">hace 1 h</div>
+      <div class="text-[10.5px] text-muted2 font-mono whitespace-nowrap mt-[3px]">hace 1 h</div>
     </div>
 
-    <div class="event-item">
-      <div class="event-dot dot-info"></div>
-      <div class="event-body">
-        <div class="event-title">Reunión de departamento — Informática</div>
-        <div class="event-meta">Hoy a las 17:00 hs · Sala de reuniones planta baja.</div>
+    <div class="flex items-start gap-[14px] px-[18px] py-3 border-b border-dim hover:bg-white/[0.025] transition-colors duration-150">
+      <div class="w-[9px] h-[9px] rounded-full mt-1 shrink-0 bg-accent shadow-[0_0_6px_var(--color-accent)]"></div>
+      <div class="flex-1">
+        <div class="text-[13px] font-medium text-content leading-[1.3]">Reunión de departamento — Informática</div>
+        <div class="text-[11.5px] text-muted mt-[3px]">Hoy a las 17:00 hs · Sala de reuniones planta baja.</div>
       </div>
-      <div class="event-time">hoy 17:00</div>
+      <div class="text-[10.5px] text-muted2 font-mono whitespace-nowrap mt-[3px]">hoy 17:00</div>
     </div>
 
-    <div class="event-item">
-      <div class="event-dot dot-success"></div>
-      <div class="event-body">
-        <div class="event-title">Importación de planilla completada exitosamente</div>
-        <div class="event-meta">Preceptoría · 1er año div. A — 32 alumnos importados sin errores.</div>
+    <div class="flex items-start gap-[14px] px-[18px] py-3 border-b border-dim hover:bg-white/[0.025] transition-colors duration-150">
+      <div class="w-[9px] h-[9px] rounded-full mt-1 shrink-0 bg-success shadow-[0_0_6px_var(--color-success)]"></div>
+      <div class="flex-1">
+        <div class="text-[13px] font-medium text-content leading-[1.3]">Importación de planilla completada exitosamente</div>
+        <div class="text-[11.5px] text-muted mt-[3px]">Preceptoría · 1er año div. A — 32 alumnos importados sin errores.</div>
       </div>
-      <div class="event-time">hace 2 h</div>
+      <div class="text-[10.5px] text-muted2 font-mono whitespace-nowrap mt-[3px]">hace 2 h</div>
     </div>
 
-    <div class="event-item">
-      <div class="event-dot dot-muted"></div>
-      <div class="event-body">
-        <div class="event-title">Backup automático del sistema completado</div>
-        <div class="event-meta">Sistema · Respaldo diario ejecutado correctamente a las 03:00 hs.</div>
+    <div class="flex items-start gap-[14px] px-[18px] py-3 hover:bg-white/[0.025] transition-colors duration-150">
+      <div class="w-[9px] h-[9px] rounded-full mt-1 shrink-0 bg-muted2"></div>
+      <div class="flex-1">
+        <div class="text-[13px] font-medium text-content leading-[1.3]">Backup automático del sistema completado</div>
+        <div class="text-[11.5px] text-muted mt-[3px]">Sistema · Respaldo diario ejecutado correctamente a las 03:00 hs.</div>
       </div>
-      <div class="event-time">03:00</div>
+      <div class="text-[10.5px] text-muted2 font-mono whitespace-nowrap mt-[3px]">03:00</div>
     </div>
   </div>
 
   {{-- Paneles laterales --}}
-  <div class="side-panels">
+  <div class="flex flex-col gap-[18px]">
 
-    <div class="panel">
-      <div class="panel-head"><span class="panel-title">Acceso rápido</span></div>
-      <div class="quick-grid">
-        <div class="quick-btn"><span class="quick-icon">📋</span><span class="quick-label">Tomar asistencia</span></div>
-        <div class="quick-btn"><span class="quick-icon">📤</span><span class="quick-label">Importar Excel</span></div>
-        <div class="quick-btn"><span class="quick-icon">📝</span><span class="quick-label">Nueva circular</span></div>
-        <div class="quick-btn"><span class="quick-icon">📊</span><span class="quick-label">Ver reportes</span></div>
+    <div class="bg-surface border border-dim rounded-[10px] overflow-hidden">
+      <div class="flex items-center justify-between px-[18px] py-[14px] border-b border-dim">
+        <span class="text-[13px] font-medium text-content">Acceso rápido</span>
+      </div>
+      <div class="grid grid-cols-2 gap-2 p-[14px]">
+        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+          <span class="text-[20px]">📋</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Tomar asistencia</span>
+        </div>
+        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+          <span class="text-[20px]">📤</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Importar Excel</span>
+        </div>
+        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+          <span class="text-[20px]">📝</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Nueva circular</span>
+        </div>
+        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+          <span class="text-[20px]">📊</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Ver reportes</span>
+        </div>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-head">
-        <span class="panel-title">Actividad reciente</span>
-        <span class="panel-action">Ver más</span>
+    <div class="bg-surface border border-dim rounded-[10px] overflow-hidden">
+      <div class="flex items-center justify-between px-[18px] py-[14px] border-b border-dim">
+        <span class="text-[13px] font-medium text-content">Actividad reciente</span>
+        <span class="text-[11.5px] text-accent2 cursor-pointer transition-opacity duration-150 hover:opacity-75">Ver más</span>
       </div>
-      <div class="activity-item">
-        <div class="activity-avatar" style="background:#1d4ed8">JP</div>
-        <div class="activity-text"><strong>Juan Pérez</strong> subió una planilla de horarios para 3er año A.</div>
-        <div class="activity-when">10:22</div>
+      <div class="flex items-center gap-2.5 px-[14px] py-[9px] hover:bg-white/[0.025] transition-colors duration-150">
+        <div class="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[10px] font-semibold text-white shrink-0" style="background:#1d4ed8">JP</div>
+        <div class="flex-1 text-[11.5px] text-muted leading-[1.4]"><strong class="text-content font-medium">Juan Pérez</strong> subió una planilla de horarios para 3er año A.</div>
+        <div class="text-[10px] text-muted2 font-mono">10:22</div>
       </div>
-      <div class="activity-item">
-        <div class="activity-avatar" style="background:#065f46">LG</div>
-        <div class="activity-text"><strong>Laura Gómez</strong> creó una nueva acta de convivencia.</div>
-        <div class="activity-when">09:48</div>
+      <div class="flex items-center gap-2.5 px-[14px] py-[9px] hover:bg-white/[0.025] transition-colors duration-150">
+        <div class="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[10px] font-semibold text-white shrink-0" style="background:#065f46">LG</div>
+        <div class="flex-1 text-[11.5px] text-muted leading-[1.4]"><strong class="text-content font-medium">Laura Gómez</strong> creó una nueva acta de convivencia.</div>
+        <div class="text-[10px] text-muted2 font-mono">09:48</div>
       </div>
-      <div class="activity-item">
-        <div class="activity-avatar" style="background:#7c3aed">AR</div>
-        <div class="activity-text"><strong>Admin Root</strong> añadió 4 nuevos docentes al sistema.</div>
-        <div class="activity-when">08:15</div>
+      <div class="flex items-center gap-2.5 px-[14px] py-[9px] hover:bg-white/[0.025] transition-colors duration-150">
+        <div class="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center text-[10px] font-semibold text-white shrink-0" style="background:#7c3aed">AR</div>
+        <div class="flex-1 text-[11.5px] text-muted leading-[1.4]"><strong class="text-content font-medium">Admin Root</strong> añadió 4 nuevos docentes al sistema.</div>
+        <div class="text-[10px] text-muted2 font-mono">08:15</div>
       </div>
     </div>
 

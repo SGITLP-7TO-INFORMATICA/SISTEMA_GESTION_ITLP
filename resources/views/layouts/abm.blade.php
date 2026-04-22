@@ -10,6 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600&display=swap" rel="stylesheet"/>
   <style>
+  @layer components {
     :root {
       --bg:          #0f1117;
       --surface:     #181c26;
@@ -299,7 +300,9 @@
       to   { opacity: 1; transform: translateY(0)   scale(1);   }
     }
     #fab-zone { animation: fabIn .3s cubic-bezier(.34,1.56,.64,1) both; animation-delay: .2s; }
+  } /* end @layer components */
   </style>
+  @livewireStyles
   @stack('styles')
 </head>
 <body>
@@ -387,5 +390,6 @@
 @endif
 
 @stack('scripts')
+@livewireScripts
 </body>
 </html>
