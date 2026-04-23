@@ -24,47 +24,6 @@ LOCK TABLES `alumnos` WRITE;
 INSERT INTO `alumnos` VALUES (1,NULL,'Ruben Maximiliano','Baungartner','HOMBRE','2026001',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(2,NULL,'Lisandro Ezequiel','Garcia','HOMBRE','2026002',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(3,NULL,'Albano','Gomez Monduzzi','HOMBRE','2026003',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(4,NULL,'Jesus Sebastian','Gonzalez Arias','HOMBRE','2026004',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(5,NULL,'Agostina Loana','Infante','MUJER','2026005',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(6,NULL,'Lautaro Benjamin','Marchant Ortiz','HOMBRE','2026006',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(7,NULL,'Valentin','Marozzi','HOMBRE','2026007',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(8,NULL,'Valentina Lujan','Mendez','MUJER','2026008',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(9,NULL,'Tobias Agustin','Pardal','HOMBRE','2026009',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(10,NULL,'Nahuel Agustin','Peralta','HOMBRE','2026010',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(11,NULL,'Franco Agustin','Piattoni','HOMBRE','2026011',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(12,NULL,'Mariano Alejandro','Ricardes Cotta','HOMBRE','2026012',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(13,NULL,'Maria Caterina','Rochon','MUJER','2026013',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(14,NULL,'Marco Tomas','Wander','HOMBRE','2026014',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(15,NULL,'Benjamin Octavio','Widman','HOMBRE','2026015',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(16,NULL,'Lucciano German','Amaya Monsalve','HOMBRE','2026016',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(17,NULL,'Ian','Barra Colautti','HOMBRE','2026017',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(18,NULL,'Esteban Daniel','Dominguez','HOMBRE','2026018',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(19,NULL,'Albano','Fortunatti','HOMBRE','2026019',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(20,NULL,'Sofia Belen','Garcia','MUJER','2026020',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(21,NULL,'Marcelo David','Herrera','HOMBRE','2026021',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(22,NULL,'Lautaro Baltazar','Lopez','HOMBRE','2026022',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(23,NULL,'Juan Cruz','Maliqueo','HOMBRE','2026023',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(24,NULL,'Nicolas','Popp','HOMBRE','2026024',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(25,NULL,'Lucas','Quijada','HOMBRE','2026025',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(26,NULL,'Santiago Ismael','Rick','HOMBRE','2026026',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(27,NULL,'Lucas Adrian','Schroeder','HOMBRE','2026027',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(28,NULL,'Jose Luis','Acuña','HOMBRE','2026028',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(29,NULL,'Micaela Belen','Barrionuevo','MUJER','2026029',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(30,NULL,'Santino','Basile','HOMBRE','2026030',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(31,NULL,'Guillermo Alejandro','Costazos','HOMBRE','2026031',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(32,NULL,'Facundo','Ercoli Guerreiro','HOMBRE','2026032',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(33,NULL,'Torcuato','Fidani','HOMBRE','2026033',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(34,NULL,'Santiago Ezequiel','Gonzalez','HOMBRE','2026034',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(35,NULL,'Santiago','Macre','HOMBRE','2026035',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(36,NULL,'Lucas Valentino','Miranda Canoves','HOMBRE','2026036',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(37,NULL,'Juan Sebastian','Muñoz','HOMBRE','2026037',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(38,NULL,'Rihana Sofia','Rando','MUJER','2026038',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(39,NULL,'Aldana','Samudio','MUJER','2026039',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(40,NULL,'Alice Dana','Sanchez Condell','MUJER','2026040',NULL,NULL,'2026-04-18 20:33:22','2026-04-18 20:33:22'),(41,NULL,'JOAQUÍN','BELLUCCI','OTRO','A0001',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(42,NULL,'LUCAS SEBASTIÁN','BUALO MARTÍNEZ','OTRO','A0002',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(43,NULL,'MATEO TIZIANO','CANDIA','OTRO','A0003',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(44,NULL,'JOAQUÍN LAUTARO','FLORES','OTRO','A0004',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(45,NULL,'KEVIN ARON','GARRIDO','OTRO','A0005',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(46,NULL,'STEFANO','GIANBERLUCA','OTRO','A0006',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(47,NULL,'AGUSTÍN EMILIO','HADESPEK','OTRO','A0007',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(48,NULL,'MONDACA TOMÁS','INOSTROZA','OTRO','A0008',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(49,NULL,'BENJAMÍN','REBOLLEDO','OTRO','A0009',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(50,NULL,'VALENTINO NICOLÁS','RIVERO','OTRO','A0010',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(51,NULL,'SANTINO OMAR','SANSERVINO','OTRO','A0011',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(52,NULL,'BRUNO','SANTECCHIA','OTRO','A0012',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(53,NULL,'VALENTINA ABRIL','AGUILAR','OTRO','A0013',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(54,NULL,'SELENE','DE CELIS','OTRO','A0014',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(55,NULL,'GUADALUPE','ESCORZA','OTRO','A0015',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(56,NULL,'MIA','FERNANDEZ','OTRO','A0016',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(57,NULL,'MATEO SEBASTIAN','GARCIA','OTRO','A0017',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(58,NULL,'TIZIANA BELEN','GASPAR','OTRO','A0018',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(59,NULL,'MIA JASMINE','KLEIN','OTRO','A0019',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(60,NULL,'AGUSTÍN URIEL','MONTENEGRO','OTRO','A0020',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(61,NULL,'NAHUEL SEBASTIÁN','MORIGGIA','OTRO','A0021',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(62,NULL,'GIULIANA','PENICE','OTRO','A0022',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(63,NULL,'FACUNDO JAVIER','QUIÑILEN','OTRO','A0023',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12'),(64,NULL,'JULIETA BELÉN','VASQUEZ','OTRO','A0024',NULL,'2026-04-20 01:36:12','2026-04-20 01:36:12','2026-04-20 01:36:12');
 /*!40000 ALTER TABLE `alumnos` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_alumnos_before_insert
-BEFORE INSERT ON Alumnos
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_creacion      = NOW();
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_alumnos_before_update
-BEFORE UPDATE ON Alumnos
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `alumnos_anios`
@@ -104,47 +63,6 @@ LOCK TABLES `alumnos_cursos` WRITE;
 INSERT INTO `alumnos_cursos` VALUES (1,'7°A GRUPO 1 INFORMATICA ',1,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:22:23',1),(2,'7°A GRUPO 2 INFORMATICA ',2,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:25:22',1),(3,'7°B GRUPO 2 INFORMATICA',2,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:22:23',2),(4,'7°B GRUPO 3 INFORMATICA',3,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:22:23',2),(5,'4°A GRUPO 1 INFORMATICA ',1,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:22:23',3),(6,'4°A GRUPO 2 INFORMATICA ',2,'INFORMATICA','2026-04-18 18:22:23','2026-04-18 18:22:23',3);
 /*!40000 ALTER TABLE `alumnos_cursos` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_alumnos_cursos_before_insert
-BEFORE INSERT ON alumnos_cursos
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_creacion      = NOW();
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_alumnos_cursos_before_update
-BEFORE UPDATE ON alumnos_cursos
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `alumnos_grupos_taller`
@@ -192,47 +110,6 @@ LOCK TABLES `docentes` WRITE;
 INSERT INTO `docentes` VALUES (1,1,'Camilo','Canclini','2002-09-07 00:00:00','2026-03-09 00:00:00','2026-04-18 18:26:32','2026-04-22 22:48:30'),(2,4,'Sofia','Gonzales',NULL,NULL,'2026-04-22 22:48:30','2026-04-22 22:48:30');
 /*!40000 ALTER TABLE `docentes` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_docentes_before_insert
-BEFORE INSERT ON Docentes
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_creacion      = NOW();
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_docentes_before_update
-BEFORE UPDATE ON Docentes
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `docentes_registro_clases`
@@ -384,7 +261,7 @@ UNLOCK TABLES;
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES ('5eqK7I0zJRCqh9vNambaxGcNtxuAKoa5fbg7SmhB',1,'127.0.0.1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0','eyJfdG9rZW4iOiI0ekZxaWl0NkJBZjNueUo2V1ljdTIwRkFqeW9wb09XS0VjWlBjaHFwIiwidXJsIjpbXSwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9kb2NlbnRlc1wvbGlicm8tdGVtYXMiLCJyb3V0ZSI6ImRvY2VudGVzLmxpYnJvLXRlbWFzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1776826042),('AVc1mV0tmdIdcseI9ChIS23EdSePYns1ob5WhxUq',1,'127.0.0.1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36','eyJfdG9rZW4iOiJlYTQ4YmNHckNwNXdWd2tBaGhGZHg2MXZlRzU2UmdkcU1jWTV5Sk5NIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2RvY2VudGVzXC9hbHVtbm9zP2RpY3RhZG9faWQ9NCIsInJvdXRlIjoiZG9jZW50ZXMuYWx1bW5vcyJ9LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1776830565);
+INSERT INTO `sessions` VALUES ('5eqK7I0zJRCqh9vNambaxGcNtxuAKoa5fbg7SmhB',1,'127.0.0.1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36 Edg/147.0.0.0','eyJfdG9rZW4iOiI0ekZxaWl0NkJBZjNueUo2V1ljdTIwRkFqeW9wb09XS0VjWlBjaHFwIiwidXJsIjpbXSwiX3ByZXZpb3VzIjp7InVybCI6Imh0dHA6XC9cLzEyNy4wLjAuMTo4MDAwXC9kb2NlbnRlc1wvbGlicm8tdGVtYXMiLCJyb3V0ZSI6ImRvY2VudGVzLmxpYnJvLXRlbWFzIn0sIl9mbGFzaCI6eyJvbGQiOltdLCJuZXciOltdfSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1776826042),('AVc1mV0tmdIdcseI9ChIS23EdSePYns1ob5WhxUq',1,'127.0.0.1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36','eyJfdG9rZW4iOiJlYTQ4YmNHckNwNXdWd2tBaGhGZHg2MXZlRzU2UmdkcU1jWTV5Sk5NIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2RvY2VudGVzXC9hbHVtbm9zP2RpY3RhZG9faWQ9NCIsInJvdXRlIjoiZG9jZW50ZXMuYWx1bW5vcyJ9LCJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI6MX0=',1776830565),('eRnxnVfmxiNs5onZ9VJJXA36SFmfwnKoJUNs9lwu',1,'127.0.0.1','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36','eyJfdG9rZW4iOiI4Q01TMnloSFNOcjczZHAwZkE4Y0JqYkdmalh4TGt5NllqVVhvVEMwIiwiX2ZsYXNoIjp7Im9sZCI6W10sIm5ldyI6W119LCJfcHJldmlvdXMiOnsidXJsIjoiaHR0cDpcL1wvMTI3LjAuMC4xOjgwMDBcL2RvY2VudGVzXC9saWJyby10ZW1hcyIsInJvdXRlIjoiZG9jZW50ZXMubGlicm8tdGVtYXMifSwibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiOjF9',1776910964);
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -403,50 +280,9 @@ UNLOCK TABLES;
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'ccanclini','Camilo Stephano','Canclini','ccanclini@itlp.edu.ar','$2y$12$00/mut3Kzqq1yS6vUArqFO0Vf9mefh.yaDcBrY6WFKYTJncuN4UB6','ccanclinidev','drRICBJHrTTMXaCoWiOnqWmBDKcCMFBojFYXbriIpMzEamGUPjEaPPgItMvS','HOMBRE',NULL,'2026-04-18 17:49:11','2026-04-22 22:45:05',NULL),(2,'testuser','test','testing','test@gmail.com','pass123','test123',NULL,'HOMBRE',NULL,'2026-04-21 23:29:37','2026-04-22 22:45:05',NULL),(3,'admin','administrator','admin','admin@gmail.com','admin','admin',NULL,'HOMBRE',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(4,'sgonzales','Sofia','Gonzalez','sgonzales@obralapiedad.com.ar','','sgonzalesdev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(5,'dgonzales','Daniela','Gonzalez','dgonzales@obralapiedad.com.ar','','dgonzalesdev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(6,'pfioriti','Patricia','Fioriti','pfioriti@obralapiedad.com.ar','','pfioritidev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL);
+INSERT INTO `usuarios` VALUES (1,'ccanclini','Camilo Stephano','Canclini','ccanclini@itlp.edu.ar','$2y$12$00/mut3Kzqq1yS6vUArqFO0Vf9mefh.yaDcBrY6WFKYTJncuN4UB6','ccanclinidev','L0QdonCBDu2GIsMMNIaEi6sfzietFJ2LLr9hv3E8DOJGl6K0Ml11FjYDFOZ6','HOMBRE',NULL,'2026-04-18 17:49:11','2026-04-22 23:20:12',NULL),(2,'testuser','test','testing','test@gmail.com','pass123','test123',NULL,'HOMBRE',NULL,'2026-04-21 23:29:37','2026-04-22 22:45:05',NULL),(3,'admin','administrator','admin','admin@gmail.com','admin','admin',NULL,'HOMBRE',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(4,'sgonzales','Sofia','Gonzalez','sgonzales@obralapiedad.com.ar','','sgonzalesdev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(5,'dgonzales','Daniela','Gonzalez','dgonzales@obralapiedad.com.ar','','dgonzalesdev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL),(6,'pfioriti','Patricia','Fioriti','pfioriti@obralapiedad.com.ar','','pfioritidev',NULL,'MUJER',NULL,'2026-04-22 22:40:22','2026-04-22 22:45:05',NULL);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_usuarios_before_insert
-BEFORE INSERT ON Usuarios
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_creacion      = NOW();
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_usuarios_before_update
-BEFORE UPDATE ON Usuarios
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Dumping data for table `usuarios_roles`
@@ -457,55 +293,6 @@ LOCK TABLES `usuarios_roles` WRITE;
 INSERT INTO `usuarios_roles` VALUES (1,'Docente','2026-04-18 17:51:04','2026-04-18 17:53:43'),(2,'Director/a','2026-04-22 22:46:47','2026-04-22 22:46:47'),(3,'Preceptor/a','2026-04-22 22:46:47','2026-04-22 22:46:47'),(4,'Secretario/a','2026-04-22 22:46:47','2026-04-22 22:46:47');
 /*!40000 ALTER TABLE `usuarios_roles` ENABLE KEYS */;
 UNLOCK TABLES;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_usuarios_roles_before_insert
-BEFORE INSERT ON Usuarios_Roles
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_creacion      = NOW();
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
-/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
-/*!50003 SET @saved_col_connection = @@collation_connection */ ;
-/*!50003 SET character_set_client  = utf8mb4 */ ;
-/*!50003 SET character_set_results = utf8mb4 */ ;
-/*!50003 SET collation_connection  = utf8mb4_general_ci */ ;
-/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
-/*!50003 SET sql_mode              = 'NO_ZERO_IN_DATE,NO_ZERO_DATE,NO_ENGINE_SUBSTITUTION' */ ;
-DELIMITER ;;
-/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER trg_usuarios_roles_before_update
-BEFORE UPDATE ON Usuarios_Roles
-FOR EACH ROW
-BEGIN
-    SET NEW.fecha_actualizacion = NOW();
-END */;;
-DELIMITER ;
-/*!50003 SET sql_mode              = @saved_sql_mode */ ;
-/*!50003 SET character_set_client  = @saved_cs_client */ ;
-/*!50003 SET character_set_results = @saved_cs_results */ ;
-/*!50003 SET collation_connection  = @saved_col_connection */ ;
-
---
--- Dumping events for database 'sgitlp'
---
-
---
--- Dumping routines for database 'sgitlp'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -516,4 +303,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-22 23:00:37
+-- Dump completed on 2026-04-22 23:42:21
