@@ -194,7 +194,7 @@
 
 
   {{-- ── REGISTROS PREVIOS DE CLASE (componente Livewire) ── --}}
-  @livewire('registros-clase-table', ['docenteId' => auth()->user()->id])
+  @livewire('registros-clase-table', ['docenteId' => $docente ? $docente->id : 0])
 
 </form>
 

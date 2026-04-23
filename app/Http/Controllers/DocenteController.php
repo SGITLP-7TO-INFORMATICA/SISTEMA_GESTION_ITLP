@@ -223,7 +223,7 @@ class DocenteController extends Controller
         // Permite abrir la página con un registro ya seleccionado (desde tomar-lista)
         $verRegistroId = request('registro_id') ?? session('last_registro_id');
 
-        return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId'));
+        return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId', 'docente'));
     }
 
     // ──────────────────────────────────────────────
