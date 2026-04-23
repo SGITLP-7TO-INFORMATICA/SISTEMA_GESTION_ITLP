@@ -17,7 +17,7 @@ class User extends Authenticatable
 
     // Columnas reales de la tabla usuarios
     protected $fillable = [
-        'nombre_usuario', 'nombre', 'apellido', 'email', 'contrasenia',
+        'nombre_usuario', 'nombre', 'apellido', 'email', 'contrasenia', 'contrasenia_dev',
     ];
 
     protected $hidden = [

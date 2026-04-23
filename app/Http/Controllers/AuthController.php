@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,6 +40,17 @@ class AuthController extends Controller
         // El segundo parámetro (boolean) activa la cookie "recuérdame":
         // si es true, la sesión dura semanas; si es false, solo la pestaña.
         $remember = $request->boolean('remember');
+
+        // Entorno local: login rápido comparando contra contrasenia_dev (texto plano).
+        // Permite usar contraseñas simples de prueba sin tocar el hash de producción.
+        if (app()->environment('local')) {
+            $user = User::where('email', $request->email)->first();
+            if ($user && $user->contrasenia_dev === $request->password) {
+                Auth::login($user, $remember);
+                $request->session()->regenerate();
+                return redirect()->intended(route('dashboard'));
+            }
+        }
 
         if (Auth::attempt($credentials, $remember)) {
             // Regenerar el ID de sesión previene "session fixation attacks"

@@ -4,37 +4,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-// Este modelo representa la asignación de un docente a una materia/curso/grupo.
-// Cada fila = "el docente X da la materia Y al curso Z, grupo W".
+// Tabla: mxm_docente_materia_dictada
+// Pivot que asigna un docente a una materia dictada, con un rol específico
+// (ej: titular, adjunto). Cada fila = "docente X dicta materia Y con rol Z".
 class DocenteMateria extends Model
 {
-    protected $table = 'docente_materias';
+    protected $table = 'mxm_docente_materia_dictada';
+    public $timestamps = false;
 
     protected $fillable = [
-        'user_id', 'materia_id', 'curso_id', 'grupo_id',
+        'id_Docente',
+        'id_Docente_Rol',
+        'id_Materia_Dictado',
     ];
 
-    // La asignación pertenece a un usuario (el docente)
     public function docente()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(Docente::class, 'id_Docente');
     }
 
-    // La asignación apunta a una materia
-    public function materia()
+    public function rol()
     {
-        return $this->belongsTo(Materia::class);
+        return $this->belongsTo(DocenteRol::class, 'id_Docente_Rol');
     }
 
-    // La asignación apunta a un curso
-    public function curso()
+    public function materiaDictado()
     {
-        return $this->belongsTo(Curso::class);
-    }
-
-    // La asignación apunta a un grupo (puede ser null si es sin división)
-    public function grupo()
-    {
-        return $this->belongsTo(Grupo::class);
+        return $this->belongsTo(MateriaDictado::class, 'id_Materia_Dictado');
     }
 }
