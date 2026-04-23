@@ -66,4 +66,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/docentes/exportar-registros', [DocenteController::class, 'descargarExcel'])
          ->name('docentes.exportar-registros.descargar');
 
+    // Trabajos prácticos ABM
+    Route::get('/docentes/trabajos-practicos', [DocenteController::class, 'trabajosPracticos'])
+         ->name('docentes.trabajos-practicos');
+
+    Route::post('/docentes/trabajos-practicos', [DocenteController::class, 'guardarTrabajo'])
+         ->name('docentes.trabajos-practicos.guardar');
+
+    Route::delete('/docentes/trabajos-practicos/{id}', [DocenteController::class, 'eliminarTrabajo'])
+         ->name('docentes.trabajos-practicos.eliminar');
+
+    Route::get('/docentes/alumnos-trabajo', [DocenteController::class, 'getAlumnosTrabajo'])
+         ->name('docentes.alumnos-trabajo');
+
 });

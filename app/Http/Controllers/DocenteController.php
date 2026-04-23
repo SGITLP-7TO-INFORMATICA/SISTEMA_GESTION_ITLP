@@ -8,6 +8,8 @@ use App\Models\Alumno;
 use App\Models\MateriaDictada;
 use App\Models\RegistroClase;
 use App\Models\Asistencia;
+use App\Models\DocenteTrabajo;
+use App\Models\AlumnoNotaTrabajo;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -564,5 +566,155 @@ class DocenteController extends Controller
             ->route('docentes.libro-temas')
             ->with('success', $msg)
             ->with('last_registro_id', $registroId);
+    }
+
+    // ──────────────────────────────────────────────
+    // TRABAJOS PRÁCTICOS
+    // ──────────────────────────────────────────────
+
+    public function trabajosPracticos()
+    {
+        $dictados = $this->getDictados();
+        $docente  = $this->getDocente();
+
+        return view('docentes.trabajos_practicos_abm', compact('dictados', 'docente'));
+    }
+
+    public function guardarTrabajo(Request $request)
+    {
+        $request->validate([
+            'dictados'                    => 'required|array|min:1',
+            'dictados.*'                  => 'integer',
+            'titulo'                      => 'required|string|max:255',
+            'descripcion'                 => 'nullable|string|max:400',
+            'numero_trabajo'              => 'nullable|integer|min:1',
+            'fecha_apertura'              => 'nullable|date',
+            'fecha_cierre'                => 'nullable|date',
+            'enlace'                      => 'nullable|string|max:255|url',
+            'alumnos'                     => 'nullable|array',
+            'alumnos.*.grupo'             => 'nullable|string|max:1',
+            'alumnos.*.nota_individual'   => 'nullable|numeric|min:0|max:10',
+            'alumnos.*.nota_grupal'       => 'nullable|numeric|min:0|max:10',
+            'alumnos.*.observaciones'     => 'nullable|string|max:400',
+        ]);
+
+        $docente = $this->getDocente();
+
+        $datos = [
+            'id_docente_creador' => $docente->id,
+            'titulo'             => $request->titulo,
+            'descripcion'        => $request->descripcion,
+            'numero_trabajo'     => $request->numero_trabajo,
+            'fecha_apertura'     => $request->fecha_apertura,
+            'fecha_cierre'       => $request->fecha_cierre,
+            'enlace'             => $request->enlace,
+        ];
+
+        if ($request->filled('trabajo_id')) {
+            $trabajo = DocenteTrabajo::where('id', $request->trabajo_id)
+                ->where('id_docente_creador', $docente->id)
+                ->firstOrFail();
+            $trabajo->update($datos);
+            $msg = 'Trabajo actualizado correctamente.';
+        } else {
+            $trabajo = DocenteTrabajo::create($datos);
+            $msg = 'Trabajo creado correctamente.';
+        }
+
+        // Sincronizar dictados en la tabla pivot
+        DB::table('mxm_docentes_trabajos_dictados')->where('id_trabajo', $trabajo->id)->delete();
+        foreach ($request->dictados as $dictadoId) {
+            DB::table('mxm_docentes_trabajos_dictados')->insert([
+                'id_trabajo' => $trabajo->id,
+                'id_dictado' => $dictadoId,
+            ]);
+        }
+
+        // Sincronizar notas de alumnos
+        if ($request->has('alumnos') && is_array($request->alumnos)) {
+            foreach ($request->alumnos as $alumnoId => $datos) {
+                $asignado = ! empty($datos['asignado']);
+                if ($asignado) {
+                    AlumnoNotaTrabajo::updateOrCreate(
+                        ['id_alumno' => $alumnoId, 'id_trabajo' => $trabajo->id],
+                        [
+                            'nota_individual' => $datos['nota_individual'] ?: null,
+                            'grupo'           => $datos['grupo'] ?: null,
+                            'nota_grupal'     => $datos['nota_grupal'] ?: null,
+                            'observaciones'   => $datos['observaciones'] ?: null,
+                        ]
+                    );
+                } else {
+                    AlumnoNotaTrabajo::where('id_alumno', $alumnoId)
+                        ->where('id_trabajo', $trabajo->id)
+                        ->delete();
+                }
+            }
+        }
+
+        return redirect()
+            ->route('docentes.trabajos-practicos')
+            ->with('success', $msg);
+    }
+
+    public function eliminarTrabajo(int $id)
+    {
+        $docente = $this->getDocente();
+        $trabajo = DocenteTrabajo::where('id', $id)
+            ->where('id_docente_creador', $docente->id)
+            ->firstOrFail();
+
+        DB::table('alumnos_notas_trabajos')->where('id_trabajo', $trabajo->id)->delete();
+        DB::table('mxm_docentes_trabajos_dictados')->where('id_trabajo', $trabajo->id)->delete();
+        $trabajo->delete();
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function getAlumnosTrabajo(Request $request)
+    {
+        $request->validate(['dictado_ids' => 'required|array']);
+
+        // Obtener los id_Curso de los dictados seleccionados
+        $cursoIds = DB::table('materias_dictado')
+            ->whereIn('id', $request->dictado_ids)
+            ->pluck('id_Curso')
+            ->unique()
+            ->toArray();
+
+        $alumnos = DB::table('alumnos')
+            ->join('mxm_alumnos_alumnos_anios as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
+            ->whereIn('mxm.id_Curso', $cursoIds)
+            ->orderBy('alumnos.apellido')
+            ->orderBy('alumnos.nombre')
+            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido', 'alumnos.legajo')
+            ->distinct()
+            ->get();
+
+        // Si hay un trabajo_id, traer las notas ya guardadas
+        $notas = collect();
+        if ($request->filled('trabajo_id')) {
+            $notas = DB::table('alumnos_notas_trabajos')
+                ->where('id_trabajo', $request->trabajo_id)
+                ->get()
+                ->keyBy('id_alumno');
+        }
+
+        $result = $alumnos->map(function ($a) use ($notas) {
+            $nota = $notas->get($a->id);
+            return [
+                'id'              => $a->id,
+                'nombre'          => $a->nombre,
+                'apellido'        => $a->apellido,
+                'legajo'          => $a->legajo,
+                'asignado'        => $nota ? true : false,
+                'grupo'           => $nota?->grupo ?? '',
+                'nota_individual' => $nota?->nota_individual ?? '',
+                'nota_grupal'     => $nota?->nota_grupal ?? '',
+                'observaciones'   => $nota?->observaciones ?? '',
+            ];
+        });
+
+        return response()->json($result);
     }
 }

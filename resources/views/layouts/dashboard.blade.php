@@ -171,6 +171,10 @@
            class="nav-subitem {{ request()->routeIs('docentes.tomar-lista') ? 'active' : '' }}">
           Tomar lista
         </a>
+        <a href="{{ route('docentes.trabajos-practicos') }}"
+           class="nav-subitem {{ request()->routeIs('docentes.trabajos-practicos') ? 'active' : '' }}">
+          Trabajos prácticos
+        </a>
         <a href="{{ route('docentes.exportar-registros') }}"
            class="nav-subitem {{ request()->routeIs('docentes.exportar-registros') ? 'active' : '' }}">
           Exportar Registros Clases

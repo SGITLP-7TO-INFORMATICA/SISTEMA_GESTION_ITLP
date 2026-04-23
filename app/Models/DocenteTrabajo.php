@@ -10,13 +10,10 @@ use Illuminate\Database\Eloquent\Model;
 class DocenteTrabajo extends Model
 {
     protected $table = 'docentes_trabajos';
-
-    // La tabla usa TIMESTAMP con DEFAULT CURRENT_TIMESTAMP / ON UPDATE,
-    // que coincide con los nombres estándar de Laravel (created_at / updated_at).
+    public $timestamps = false;
 
     protected $fillable = [
         'id_docente_creador',
-        'id_materia_dictado',
         'numero_trabajo',
         'titulo',
         'descripcion',
@@ -35,9 +32,14 @@ class DocenteTrabajo extends Model
         return $this->belongsTo(Docente::class, 'id_docente_creador');
     }
 
-    public function materiaDictado()
+    public function dictados()
     {
-        return $this->belongsTo(MateriaDictado::class, 'id_materia_dictado');
+        return $this->belongsToMany(
+            MateriaDictado::class,
+            'mxm_docentes_trabajos_dictados',
+            'id_trabajo',
+            'id_dictado'
+        );
     }
 
     public function notas()

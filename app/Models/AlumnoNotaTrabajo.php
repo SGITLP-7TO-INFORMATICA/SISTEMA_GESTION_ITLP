@@ -15,12 +15,15 @@ class AlumnoNotaTrabajo extends Model
     protected $fillable = [
         'id_alumno',
         'id_trabajo',
-        'nota',
+        'nota_individual',
+        'grupo',
+        'nota_grupal',
         'observaciones',
     ];
 
     protected $casts = [
-        'nota' => 'decimal:2',
+        'nota_individual' => 'decimal:2',
+        'nota_grupal'     => 'decimal:2',
     ];
 
     public function alumno()

@@ -109,22 +109,22 @@
         <span class="text-[13px] font-medium text-content">Acceso rápido</span>
       </div>
       <div class="grid grid-cols-2 gap-2 p-[14px]">
-        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+        <a href="{{ route('docentes.tomar-lista') }}" class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow no-underline">
           <span class="text-[20px]">📋</span>
           <span class="text-[11px] text-muted leading-[1.3]">Tomar asistencia</span>
-        </div>
-        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
-          <span class="text-[20px]">📤</span>
-          <span class="text-[11px] text-muted leading-[1.3]">Importar Excel</span>
-        </div>
-        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
-          <span class="text-[20px]">📝</span>
-          <span class="text-[11px] text-muted leading-[1.3]">Nueva circular</span>
-        </div>
-        <div class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow">
+        </a>
+        <a href="{{ route('docentes.libro-temas') }}" class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow no-underline">
+          <span class="text-[20px]">📖</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Libro de temas</span>
+        </a>
+        <a href="{{ route('docentes.trabajos-practicos') }}" class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow no-underline">
+          <span class="text-[20px]">✏️</span>
+          <span class="text-[11px] text-muted leading-[1.3]">Trabajos prácticos</span>
+        </a>
+        <a href="{{ route('docentes.exportar-registros') }}" class="flex flex-col items-center gap-[7px] p-[14px_8px] border border-dim rounded-lg cursor-pointer transition-[border-color,background] duration-150 text-center hover:border-accent hover:bg-glow no-underline">
           <span class="text-[20px]">📊</span>
-          <span class="text-[11px] text-muted leading-[1.3]">Ver reportes</span>
-        </div>
+          <span class="text-[11px] text-muted leading-[1.3]">Exportar registros</span>
+        </a>
       </div>
     </div>
 
