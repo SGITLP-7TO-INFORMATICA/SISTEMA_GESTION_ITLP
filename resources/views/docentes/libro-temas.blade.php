@@ -2,6 +2,11 @@
 
 @section('title', 'Libro de temas')
 
+@section('breadcrumb')
+  <a href="{{ route('dashboard') }}">Docentes</a>
+@endsection
+
+
 @push('styles')
 <style>
   /* Toggled by JS — can't express display:none/flex with Tailwind alone */
@@ -9,6 +14,8 @@
   #aviso-guardar.visible  { display: flex; }
   #banner-edicion { display: none; }
   #banner-edicion.visible { display: flex; }
+  #aviso-fecha-dia { display: none; }
+  #aviso-fecha-dia.visible { display: flex; }
 </style>
 @endpush
 
@@ -64,12 +71,14 @@
             @foreach ($dictados as $d)
               <option
                 value="{{ $d->DICTADO_ID }}"
-                data-desde="{{ $d->Horario_Desde }}"
-                data-hasta="{{ $d->Horario_Hasta }}"
+                data-desde="{{ $d->MODULO_HORARIO_DESDE }}"
+                data-hasta="{{ $d->MODULO_HORARIO_HASTA }}"
+                data-dia="{{ $d->MODULO_DIA }}"
                 {{ old('dictado_id') == $d->DICTADO_ID ? 'selected' : '' }}
               >
                 {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
-                @if($d->Dia) ({{ $d->Dia }}) @endif
+                @if($d->MODULO_DIA) ({{ $d->MODULO_DIA }}) @endif
+                @if($d->MODULO_HORARIO_DESDE_HASTA) ({{ $d->MODULO_HORARIO_DESDE_HASTA }}) @endif
               </option>
             @endforeach
           </select>
@@ -109,6 +118,15 @@
             title="Se pre-llena según el módulo horario del dictado"
             class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none opacity-60 cursor-default transition-[border-color,box-shadow] duration-200" />
         </div>
+      </div>
+
+      {{-- Aviso: fecha no coincide con el día del módulo horario --}}
+      <div id="aviso-fecha-dia" class="items-center gap-2 bg-warning/[0.08] border border-warning/30 rounded-lg px-3 py-2 text-[12px] text-warning">
+        <svg class="shrink-0" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span id="aviso-fecha-dia-txt"></span>
       </div>
 
       {{-- Fila 2: Objetivo clase | Contenidos vistos --}}
@@ -223,18 +241,144 @@
     const guardado = document.getElementById('registro_id').value !== '';
     if (!guardado) {
       e.preventDefault();
-      document.getElementById('aviso-guardar').classList.add('visible');
-      this.closest('.tomar-lista-zone').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const confirmar = confirm(
+        '⚠️ Todavía no guardaste el libro de temas.\n\n' +
+        '¿Querés guardarlo ahora para poder tomar la asistencia?'
+      );
+      if (confirmar) {
+        // Agregar flag para que el controller redirija a tomar-lista después de guardar
+        const flag = document.createElement('input');
+        flag.type  = 'hidden';
+        flag.name  = 'ir_a_lista';
+        flag.value = '1';
+        document.getElementById('main-form').appendChild(flag);
+        document.getElementById('main-form').requestSubmit();
+      } else {
+        document.getElementById('aviso-guardar').classList.add('visible');
+        this.closest('.tomar-lista-zone').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
     }
   });
 
-  // ── Pre-llenar hora desde/hasta al seleccionar un dictado ──
+  // ── Confirmar antes de guardar el libro de temas ──
+  document.getElementById('main-form').addEventListener('submit', function (e) {
+    // Si el submit viene de "ir_a_lista" el confirm ya fue hecho — no preguntamos de nuevo
+    const irALista = this.querySelector('input[name="ir_a_lista"]');
+    if (irALista) return;
+
+    const enEdicion = document.getElementById('registro_id').value !== '';
+    const msg = enEdicion
+      ? '¿Confirmar los cambios sobre este registro del libro de temas?'
+      : '¿Guardar esta clase en el libro de temas?';
+    if (!confirm(msg)) {
+      e.preventDefault();
+    }
+  });
+
+  // ── Helpers de fecha según módulo horario ──
+  const DIA_NUM = { LUNES: 1, MARTES: 2, MIERCOLES: 3, JUEVES: 4, VIERNES: 5 };
+  const DIA_ES  = { LUNES: 'lunes', MARTES: 'martes', MIERCOLES: 'miércoles', JUEVES: 'jueves', VIERNES: 'viernes' };
+  let moduloDia = '';
+
+  // Devuelve la fecha más reciente (o hoy si coincide) que cae en el día indicado (YYYY-MM-DD)
+  function fechaMasReciente(nombreDia) {
+    const target = DIA_NUM[nombreDia];
+    if (target === undefined) return null;
+    const hoy = new Date();
+    let diff = hoy.getDay() - target;
+    if (diff < 0) diff += 7;
+    const result = new Date(hoy);
+    result.setDate(hoy.getDate() - diff);
+    // Usar componentes locales para evitar desfase UTC (ej. UTC-3 Argentina)
+    const y = result.getFullYear();
+    const m = String(result.getMonth() + 1).padStart(2, '0');
+    const d = String(result.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  function verificarFechaConModulo() {
+    const aviso   = document.getElementById('aviso-fecha-dia');
+    const avisoTxt = document.getElementById('aviso-fecha-dia-txt');
+    if (!moduloDia || DIA_NUM[moduloDia] === undefined) {
+      aviso.classList.remove('visible');
+      return;
+    }
+    const fechaVal = document.getElementById('fecha').value;
+    if (!fechaVal) { aviso.classList.remove('visible'); return; }
+    // Parsear sin problemas de zona horaria
+    const diaNum = new Date(fechaVal + 'T12:00:00').getDay();
+    if (diaNum !== DIA_NUM[moduloDia]) {
+      const sug = fechaMasReciente(moduloDia);
+      const [y, m, d] = sug.split('-');
+      avisoTxt.textContent =
+        `La fecha no corresponde al ${DIA_ES[moduloDia]} (día del módulo). ` +
+        `La más reciente sería ${d}/${m}/${y}.`;
+      aviso.classList.add('visible');
+    } else {
+      aviso.classList.remove('visible');
+    }
+  }
+
+  // Disparar verificación cada vez que el usuario cambia la fecha
+  document.getElementById('fecha').addEventListener('change', verificarFechaConModulo);
+
+  // ── Avisar si se cambia la materia dictada con campos completados ──
+  let dictadoAnterior = document.getElementById('dictado_id').value;
+
+  document.getElementById('dictado_id').addEventListener('focus', function () {
+    dictadoAnterior = this.value;
+  });
+
   document.getElementById('dictado_id').addEventListener('change', function () {
-    const opt   = this.options[this.selectedIndex];
-    const desde = opt.dataset.desde || '';
-    const hasta = opt.dataset.hasta || '';
+    const camposTexto = ['objetivo_clase', 'contenidos_vistos', 'actividades', 'observaciones'];
+    const hayCargado  = camposTexto.some(id => (document.getElementById(id)?.value ?? '').trim() !== '');
+
+    if (hayCargado) {
+      const continuar = confirm(
+        'Si cambiás la materia se perderá la información cargada en el formulario.\n\n' +
+        '¿Deseás continuar?'
+      );
+      if (!continuar) {
+        this.value = dictadoAnterior; // revertir la selección
+        return;
+      }
+      // Limpiar todos los inputs del formulario
+      camposTexto.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      document.getElementById('numero_clase').value = '';
+    }
+
+    dictadoAnterior = this.value;
+
+    // ── Pre-llenar hora desde/hasta, número de clase y fecha ──
+    const opt       = this.options[this.selectedIndex];
+    const desde     = opt.dataset.desde || '';
+    const hasta     = opt.dataset.hasta || '';
+    const dictadoId = this.value;
+
     document.getElementById('hora_desde').value = desde ? desde.substring(0, 5) : '';
     document.getElementById('hora_hasta').value = hasta ? hasta.substring(0, 5) : '';
+
+    // Actualizar módulo día y verificar/auto-llenar fecha
+    moduloDia = (opt.dataset.dia || '').trim().toUpperCase();
+
+    const enEdicion = document.getElementById('registro_id').value !== '';
+    if (!enEdicion) {
+      // Auto-llenar fecha con el día más reciente del módulo
+      if (moduloDia && DIA_NUM[moduloDia] !== undefined) {
+        document.getElementById('fecha').value = fechaMasReciente(moduloDia);
+      }
+      if (dictadoId) {
+        fetch(`{{ route('docentes.siguiente-numero-clase') }}?dictado_id=${dictadoId}`)
+          .then(r => r.json())
+          .then(data => { document.getElementById('numero_clase').value = data.siguiente; })
+          .catch(() => {});
+      } else {
+        document.getElementById('numero_clase').value = '';
+      }
+    }
+
+    // Verificar que la fecha actual coincide con el módulo (aplica en edición también)
+    verificarFechaConModulo();
   });
 
   // ── Escuchar el evento que dispara el componente Livewire al hacer "editar" ──
@@ -254,6 +398,12 @@
                                                           ? d.REGISTRO_CLASE_HORA_DESDE.substring(0, 5) : '';
     document.getElementById('hora_hasta').value        = d.REGISTRO_CLASE_HORA_HASTA
                                                           ? d.REGISTRO_CLASE_HORA_HASTA.substring(0, 5) : '';
+
+    // Actualizar moduloDia desde la opción del dictado cargado
+    const selDictado = document.getElementById('dictado_id');
+    const optCargado = selDictado.options[selDictado.selectedIndex];
+    moduloDia = (optCargado?.dataset.dia || '').trim().toUpperCase();
+    verificarFechaConModulo();
 
     document.getElementById('banner-edicion').classList.add('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
@@ -277,6 +427,8 @@
     document.getElementById('main-form').reset();
     document.getElementById('banner-edicion').classList.remove('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
+    document.getElementById('aviso-fecha-dia').classList.remove('visible');
+    moduloDia = '';
     setModoEditar(false);
 
     Livewire.dispatch('cancelar-seleccion');

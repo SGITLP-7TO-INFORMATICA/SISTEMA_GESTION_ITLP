@@ -13,7 +13,7 @@ class Asistencia extends Model
 
     protected $fillable = [
         'id_Alumno',
-        'id_Curso',
+        'id_materia_dictada',
         'Id_Registro_Clase',
         'Fecha',
         'Id_Usuario_Verificador',

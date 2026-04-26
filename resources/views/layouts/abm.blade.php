@@ -15,6 +15,7 @@
       --bg:          #0f1117;
       --surface:     #181c26;
       --surface2:    #1f2333;
+      --surface2-50-opacity:    #1f2333d3;
       --border:      rgba(255,255,255,0.07);
       --border2:     rgba(255,255,255,0.13);
       --accent:      #3b82f6;
@@ -141,20 +142,67 @@
       gap: 12px;
     }
 
-    /* Usuario */
-    .user-chip {
+    /* ── Menú de usuario (dropdown) ── */
+    .user-menu {
+      position: relative;
       display: flex; align-items: center; gap: 8px;
       padding: 4px 10px 4px 4px;
       border: 1px solid var(--border2);
       border-radius: 10px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color .15s;
     }
+    .user-menu:hover { border-color: var(--accent); }
+
     .user-avatar {
       width: 28px; height: 28px; border-radius: 7px;
       background: linear-gradient(135deg, #1e3a5f, #2563eb);
       display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 600; color: #fff;
     }
-    .user-name { font-size: 12px; color: var(--muted); }
+    .user-info { display: flex; flex-direction: column; }
+    .user-name  { font-size: 12px; color: var(--muted); line-height: 1.2; }
+    .user-role  { font-size: 10px; color: var(--muted2); line-height: 1.2; }
+    .user-chevron {
+      font-size: 9px; color: var(--muted2);
+      transition: transform .2s;
+    }
+    .user-menu.open .user-chevron { transform: rotate(180deg); }
+
+    /* Dropdown panel */
+    .user-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 180px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.45);
+      overflow: hidden;
+      z-index: 500;
+    }
+    .user-menu.open .user-dropdown { display: block; }
+
+    .user-dropdown-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 14px;
+      font-size: 12.5px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: background .12s, color .12s;
+    }
+    .user-dropdown-item:hover { background: rgba(255,255,255,.04); color: var(--text); }
+    .user-dropdown-item svg { flex-shrink: 0; }
+    .user-dropdown-item.danger { color: #fca5a5; }
+    .user-dropdown-item.danger:hover { background: rgba(239,68,68,.1); color: #ef4444; }
+    .user-dropdown-item button {
+      all: unset; display: flex; align-items: center; gap: 9px;
+      width: 100%; cursor: pointer;
+    }
+    .user-dropdown-sep { height: 1px; background: var(--border); margin: 3px 0; }
 
     /* ── MAIN ── */
     main {
@@ -233,8 +281,9 @@
           display: flex;
           align-items: center;
           gap: 10px;
-          background-color: var(--bg-transparent-50);
-          box-shadow: 0 4px 24px rgba(66, 85, 116, 0.25);
+          background-color: var(--surface2-50-opacity);
+          backdrop-filter: blur(2px);
+          box-shadow: 0 4px 24px rgba(5, 7, 10, 0.25);
           display: flex;
           justify-content: end;
           padding: 10px 10px;
@@ -343,13 +392,36 @@
       Volver al panel
     </a>
 
-    <div class="user-chip">
+    <div class="user-menu" id="abmUserMenu" onclick="toggleAbmMenu()">
       <div class="user-avatar">
-        {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 2)) : 'US' }}
+        {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 1)) . strtoupper(substr(auth()->user()->apellido, 0, 1)) : 'US' }}
       </div>
-      <span class="user-name">
-        {{ auth()->check() ? auth()->user()->nombre . ' ' . auth()->user()->apellido : 'Usuario' }}
-      </span>
+      <div class="user-info">
+        <span class="user-name">{{ auth()->check() ? auth()->user()->nombre . ' ' . auth()->user()->apellido : 'Usuario' }}</span>
+        <span class="user-role">{{ auth()->check() ? auth()->user()->nombre_usuario : '' }}</span>
+      </div>
+      <span class="user-chevron">▼</span>
+
+      <div class="user-dropdown">
+        <div class="user-dropdown-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi usuario
+        </div>
+        <div class="user-dropdown-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"/><path d="M4.93 4.93a10 10 0 0 0 14.14 14.14"/></svg>
+          Configuración
+        </div>
+        <div class="user-dropdown-sep"></div>
+        <div class="user-dropdown-item danger">
+          <form method="POST" action="{{ route('logout') }}" style="margin:0;width:100%">
+            @csrf
+            <button type="submit">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Cerrar sesión
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -389,6 +461,15 @@
 </div>
 @endif
 
+<script>
+  function toggleAbmMenu() {
+    document.getElementById('abmUserMenu').classList.toggle('open');
+  }
+  document.addEventListener('click', function(e) {
+    const menu = document.getElementById('abmUserMenu');
+    if (menu && !menu.contains(e.target)) menu.classList.remove('open');
+  });
+</script>
 @stack('scripts')
 @livewireScripts
 </body>

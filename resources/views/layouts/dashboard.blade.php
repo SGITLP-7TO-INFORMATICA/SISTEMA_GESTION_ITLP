@@ -51,27 +51,24 @@
          están definidas en app.css @layer components porque usan estados JS (.open). --}}
     <div class="user-menu" id="userMenu" onclick="toggleMenu()">
       <div class="user-avatar">
-        {{-- auth()->user()->name: nombre del usuario autenticado en Laravel --}}
-        {{ auth()->check() ? strtoupper(substr(auth()->user()->name, 0, 2)) : 'US' }}
+        {{ auth()->check() ? strtoupper(substr(auth()->user()->nombre, 0, 1)) . strtoupper(substr(auth()->user()->apellido, 0, 1)) : 'US' }}
       </div>
       <div class="user-info">
-        <span class="user-name">{{ auth()->check() ? auth()->user()->name : 'Usuario' }}</span>
-        <span class="user-role">Docente</span>
+        <span class="user-name">{{ auth()->check() ? auth()->user()->nombre . ' ' . auth()->user()->apellido : 'Usuario' }}</span>
+        <span class="user-role">{{ auth()->check() ? auth()->user()->nombre_usuario : '' }}</span>
       </div>
       <span class="chevron">▼</span>
 
       <div class="dropdown">
         <div class="dropdown-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Mi perfil
+          Mi usuario
         </div>
         <div class="dropdown-item">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"/><path d="M4.93 4.93a10 10 0 0 0 14.14 14.14"/></svg>
           Configuración
         </div>
         <div class="dropdown-sep"></div>
-        {{-- Formulario de logout: POST por seguridad (protección CSRF de Laravel).
-             action apunta a la ruta 'logout' definida en routes/web.php. --}}
         <form method="POST" action="{{ route('logout') }}" style="margin:0">
           @csrf
           <button type="submit" class="dropdown-item danger">
@@ -138,17 +135,25 @@
     </div>
 
     <!-- Administración -->
-    <div class="nav-group {{ request()->is('admin*') ? 'open' : '' }}" id="grp-admin">
+    <div class="nav-group {{ request()->is('administracion*') ? 'open' : '' }}" id="grp-admin">
       <div class="nav-group-toggle" onclick="toggleGroup('grp-admin')">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         Administración
         <span class="arrow">▶</span>
       </div>
       <div class="nav-subitems">
-        <a href="#" class="nav-subitem">Alumnos</a>
-        <a href="#" class="nav-subitem">Docentes</a>
-        <a href="#" class="nav-subitem">Cursos y divisiones</a>
-        <a href="#" class="nav-subitem">Materias</a>
+        <a href="{{ route('administracion.alumnos') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.alumnos') ? 'active' : '' }}">Alumnos</a>
+        <a href="{{ route('administracion.docentes') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.docentes') ? 'active' : '' }}">Docentes</a>
+        <a href="{{ route('administracion.cursos') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.cursos') ? 'active' : '' }}">Cursos y divisiones</a>
+        <a href="{{ route('administracion.anios') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.anios') ? 'active' : '' }}">Años escolares</a>
+        <a href="{{ route('administracion.materias') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.materias') ? 'active' : '' }}">Materias</a>
+        <a href="{{ route('administracion.materias-dictado') }}"
+           class="nav-subitem {{ request()->routeIs('administracion.materias-dictado') ? 'active' : '' }}">Dictado de materias</a>
       </div>
     </div>
 

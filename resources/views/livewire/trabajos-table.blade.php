@@ -77,7 +77,7 @@
               <td class="px-4 py-[9px] text-[11.5px] text-muted font-mono whitespace-nowrap">
                 {{ $t->fecha_cierre ? \Carbon\Carbon::parse($t->fecha_cierre)->format('d/m/Y') : '—' }}
               </td>
-              <td class="px-4 py-[9px]">
+              <td class="px-4 py-[6px]">
                 <div class="flex items-center justify-end gap-1">
                   <button type="button" wire:click="cargarTrabajo({{ $t->id }})" title="Editar"
                     class="w-[35px] h-[35px] flex items-center justify-center rounded-lg bg-accent/10 text-accent2 cursor-pointer border-none transition-colors duration-150 hover:bg-accent/25">
@@ -169,10 +169,10 @@
                 <td class="px-4 py-[10px] text-[11.5px] text-muted font-mono whitespace-nowrap">
                   {{ $t->fecha_apertura ? \Carbon\Carbon::parse($t->fecha_apertura)->format('d/m/Y') : '—' }}
                 </td>
-                <td class="px-4 py-[10px] text-[11.5px] text-muted font-mono whitespace-nowrap">
+                <td class="px-4 py-[6px] text-[11.5px] text-muted font-mono whitespace-nowrap">
                   {{ $t->fecha_cierre ? \Carbon\Carbon::parse($t->fecha_cierre)->format('d/m/Y') : '—' }}
                 </td>
-                <td class="px-4 py-[10px]">
+                <td class="px-4 py-[6px]">
                   <div class="flex items-center justify-end gap-1">
                     <button type="button" wire:click="cargarTrabajo({{ $t->id }})" title="Editar"
                       class="w-[35px] h-[35px] flex items-center justify-center rounded-lg bg-accent/10 text-accent2 cursor-pointer border-none transition-colors duration-150 hover:bg-accent/25">

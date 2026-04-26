@@ -53,7 +53,7 @@
           @endif
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[140px]">Horario</th>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Contenidos vistos</th>
-          <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[70px]"></th>
+          <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[110px]"></th>
         </tr>
       </thead>
       <tbody>
@@ -125,14 +125,53 @@
                 {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CONTENIDOS ?? '—', 90) }}
               </td>
 
-              <td class="px-4 py-[10px] text-right">
-                <button
-                  type="button"
-                  wire:click="cargarRegistro({{ $reg->REGISTRO_CLASE_ID }})"
-                  class="inline-block text-[0.7em] bg-accent/10 text-accent2 px-4 py-1.5 rounded font-mono cursor-pointer border-none transition-colors duration-150 hover:bg-accent/20"
-                >
-                  editar
-                </button>
+              <td class="px-4 py-[10px]">
+                <div class="flex items-center justify-end gap-1.5">
+
+                  {{-- Ojito: ver asistencias (solo si tiene asistencias cargadas) --}}
+                  @if (in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia))
+                    <a
+                      href="{{ route('docentes.tomar-lista', ['registro_id' => $reg->REGISTRO_CLASE_ID]) }}"
+                      title="Ver asistencias"
+                      class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-success border border-success/30 bg-success/[0.07] transition-colors duration-150 hover:bg-success/15"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </a>
+                  @endif
+
+                  {{-- Lápiz: editar registro --}}
+                  <button
+                    type="button"
+                    wire:click="cargarRegistro({{ $reg->REGISTRO_CLASE_ID }})"
+                    title="Editar registro"
+                    class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-accent2 border border-accent/30 bg-accent/[0.07] transition-colors duration-150 hover:bg-accent/15 cursor-pointer"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+
+                  {{-- Tacho: eliminar (solo si NO tiene asistencias) --}}
+                  @if (! in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia))
+                    <button
+                      type="button"
+                      wire:click="eliminarRegistro({{ $reg->REGISTRO_CLASE_ID }})"
+                      wire:confirm="¿Eliminar este registro de clase? Esta acción no se puede deshacer."
+                      title="Eliminar registro"
+                      class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-danger border border-danger/30 bg-danger/[0.07] transition-colors duration-150 hover:bg-danger/15 cursor-pointer"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                      </svg>
+                    </button>
+                  @endif
+
+                </div>
               </td>
             </tr>
           @endforeach

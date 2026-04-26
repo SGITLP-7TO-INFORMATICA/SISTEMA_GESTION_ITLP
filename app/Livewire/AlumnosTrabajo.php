@@ -28,22 +28,16 @@ class AlumnosTrabajo extends Component
             return view('livewire.alumnos-trabajo', ['grupos' => collect(), 'total' => 0]);
         }
 
-        // Obtener cursoIds a partir de los dictados seleccionados
-        $cursoIds = DB::table('materias_dictado')
-            ->whereIn('id', $this->dictadoIds)
-            ->pluck('id_Curso')
-            ->unique()
-            ->toArray();
-
-        // Alumnos con nombre de curso para agrupar
+        // Alumnos inscriptos en los dictados seleccionados, agrupados por curso
         $alumnos = DB::table('alumnos as a')
-            ->join('mxm_alumnos_alumnos_anios as mxm', 'mxm.id_Alumno', '=', 'a.id')
-            ->join('alumnos_cursos as c', 'c.id', '=', 'mxm.id_Curso')
-            ->whereIn('mxm.id_Curso', $cursoIds)
-            ->orderBy('c.Nombre')
+            ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'a.id')
+            ->join('mxm_cursos_materias_dictado as cmd', 'cmd.id_materia_dictado', '=', 'mxm.id_Materia_Dictado')
+            ->join('alumnos_cursos as c', 'c.id', '=', 'cmd.id_curso')
+            ->whereIn('mxm.id_Materia_Dictado', $this->dictadoIds)
+            ->orderBy('c.nombre')
             ->orderBy('a.apellido')
             ->orderBy('a.nombre')
-            ->select('a.id', 'a.nombre', 'a.apellido', 'c.Nombre as curso_nombre')
+            ->select('a.id', 'a.nombre', 'a.apellido', 'c.nombre as curso_nombre')
             ->distinct()
             ->get();
 

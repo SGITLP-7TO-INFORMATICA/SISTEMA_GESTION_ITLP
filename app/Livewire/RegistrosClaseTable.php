@@ -37,6 +37,26 @@ class RegistrosClaseTable extends Component
         $this->selectedId = null;
     }
 
+    public function eliminarRegistro(int $id): void
+    {
+        // Verificación de seguridad: no eliminar si ya tiene asistencias cargadas
+        $tieneAsistencias = DB::table('alumnos_asistencias')
+            ->where('Id_Registro_Clase', $id)
+            ->exists();
+
+        if ($tieneAsistencias) {
+            return;
+        }
+
+        DB::table('docentes_registro_clases')->where('id', $id)->delete();
+
+        // Si se estaba editando este registro, cancelar la selección
+        if ($this->selectedId === $id) {
+            $this->selectedId = null;
+            $this->dispatch('cancelar-seleccion');
+        }
+    }
+
     public function render()
     {
         $registros = DB::table('view_docentes_registro_clases')

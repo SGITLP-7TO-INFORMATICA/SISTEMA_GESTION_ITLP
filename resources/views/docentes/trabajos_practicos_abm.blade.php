@@ -13,7 +13,10 @@
 </style>
 @endpush
 
-@section('breadcrumb', 'Módulo docente / Trabajos prácticos')
+@section('breadcrumb')
+  <a href="{{ route('dashboard') }}">Docentes</a>
+@endsection
+
 @section('fab-form', 'main-form')
 @section('fab-label', 'Guardar trabajo')
 

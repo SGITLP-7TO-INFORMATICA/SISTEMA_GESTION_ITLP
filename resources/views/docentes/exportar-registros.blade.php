@@ -24,13 +24,6 @@
 
 @section('content')
 
-<div class="page-header fade-1">
-  <div class="page-title">Exportar Registros de Clases</div>
-  <div class="page-breadcrumb">
-    <a href="{{ route('dashboard') }}">Panel principal</a> › Docentes › Exportar Registros
-  </div>
-</div>
-
 @if ($errors->any())
   <div class="flex items-start gap-[10px] bg-danger/10 border border-danger/25 rounded-[10px] px-[18px] py-[14px] mb-[18px] text-[#fca5a5] text-[13px] fade-1">
     <svg width="16" height="16" class="mt-px shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -132,9 +125,9 @@
       </svg>
     </div>
     <div class="flex-1">
-      <div class="text-[13.5px] font-semibold text-content mb-1">El archivo Excel contendrá 2 hojas</div>
+      <div class="text-[13.5px] font-semibold text-content mb-1">El archivo Excel contendrá 3 hojas</div>
       <div class="text-[12px] text-muted leading-relaxed">
-        El reporte incluye todos los registros del <strong class="text-accent2 font-medium">Libro de Temas</strong> y la grilla completa de <strong class="text-accent2 font-medium">Asistencias</strong> para la materia y período seleccionados.
+        El reporte incluye todos los registros del <strong class="text-accent2 font-medium">Libro de Temas</strong>, la grilla completa de <strong class="text-accent2 font-medium">Asistencias</strong> y la grilla completa de <strong class="text-accent2 font-medium">Trabajos Prácticos / Evaluaciones</strong> para la materia y período seleccionados.
       </div>
     </div>
   </div>
@@ -160,9 +153,22 @@
       </div>
       <div class="text-[12px] text-muted leading-[1.65]">
         Cada columna es un alumno del curso. Cada fila es una clase (N° y fecha).<br>
-        <span class="font-mono text-[11px]">
-          P = Presente &nbsp;·&nbsp; A = Ausente &nbsp;·&nbsp; T = Tarde &nbsp;·&nbsp; J = Justificada &nbsp;·&nbsp; R = Retira Antes
-        </span>
+        <div class="flex-col font-mono text-[11px]">
+          <div>P = Presente</div>
+          <div>A = Ausente</div>
+          <div>T = Tarde</div>
+          <div>J = Justificada</div>
+          <div>R = Retira Antes</div>
+        </div>
+      </div>
+    </div>
+    <div class="flex-1 min-w-[220px] bg-surface border border-dim rounded-[10px] p-[18px]">
+      <div class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent2 bg-glow rounded-md px-[10px] py-[3px] mb-[10px] font-mono">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Hoja 3 — Trabajos Prácticos / Evaluaciones
+      </div>
+      <div class="text-[12px] text-muted leading-[1.65]">
+        Cada grupo de columnas es un trabajo práctico del curso. Dentro de cada grupo, estan las columnas "Nota", "Grupo", "Nota Grupal", "Fecha de Entrega", "Observaciones".
       </div>
     </div>
   </div>

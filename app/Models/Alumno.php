@@ -11,19 +11,19 @@ class Alumno extends Model
     protected $fillable = [
         'id_usuario', 'nombre', 'apellido', 'Genero', 'legajo',
         'fecha_nacimiento', 'fecha_ingreso',
+        'id_curso_actual', 'id_grupo_taller_actual', 'activo',
     ];
 
     const CREATED_AT = 'fecha_creacion';
     const UPDATED_AT = 'fecha_actualizacion';
 
-    // Los cursos del alumno van por la tabla MxM mxm_alumnos_alumnos_anios
-    public function cursos()
+    public function materiasDictadas()
     {
         return $this->belongsToMany(
-            Curso::class,
-            'mxm_alumnos_alumnos_anios',
+            \App\Models\MateriaDictado::class,
+            'mxm_alumnos_materias',
             'id_Alumno',
-            'id_Curso'
+            'id_Materia_Dictado'
         );
     }
 

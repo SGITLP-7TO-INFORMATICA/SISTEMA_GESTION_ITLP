@@ -14,16 +14,10 @@ class MateriaDictado extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'id_Curso',
         'id_Materia',
         'Anio_Dictado',
         'id_Modulo_Horario',
     ];
-
-    public function curso()
-    {
-        return $this->belongsTo(Curso::class, 'id_Curso');
-    }
 
     public function materia()
     {

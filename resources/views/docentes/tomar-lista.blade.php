@@ -2,6 +2,10 @@
 
 @section('title', 'Tomar lista')
 
+@section('breadcrumb')
+  <a href="{{ route('dashboard') }}">Docentes</a>
+@endsection
+
 @php
   // ¿Ya viene con un registro de clase pre-seleccionado?
   $preseleccionado = isset($registroClase) && $registroClase !== null && isset($dictadoInfo) && $dictadoInfo !== null;
@@ -65,8 +69,8 @@
         <tr>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Fecha</th>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Materia / Curso</th>
-          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[120px]">Horario</th>
-          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Asistencia</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[200px]">Horario</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[200px]">Asistencia</th>
           <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[48px]"></th>
         </tr>
       </thead>
