@@ -41,9 +41,9 @@ class AuthController extends Controller
         // si es true, la sesión dura semanas; si es false, solo la pestaña.
         $remember = $request->boolean('remember');
 
-        // Entorno local: login rápido comparando contra contrasenia_dev (texto plano).
+        // Modo debug: login rápido comparando contra contrasenia_dev (texto plano).
         // Permite usar contraseñas simples de prueba sin tocar el hash de producción.
-        if (app()->environment('local')) {
+        if (config('app.debug')) {
             $user = User::where('email', $request->email)->first();
             if ($user && $user->contrasenia_dev === $request->password) {
                 Auth::login($user, $remember);

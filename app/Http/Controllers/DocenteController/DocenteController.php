@@ -106,7 +106,7 @@ class DocenteController extends Controller
 
         $alumnos = DB::table('view_alumnos_por_dictado_docente')
             ->where('DICTADO_ID', $request->dictado_id)
-            ->where('USUARIO_ID', auth()->id())
+            ->where('USUARIO_ID_PROFESOR', auth()->id())
             ->orderBy('ALUMNO_APELLIDO')
             ->select(
                 'ALUMNO_ID    as id',
