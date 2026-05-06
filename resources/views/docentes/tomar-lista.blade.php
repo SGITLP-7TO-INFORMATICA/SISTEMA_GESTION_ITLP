@@ -81,6 +81,7 @@
             onclick="seleccionarRegistro(this)"
             data-registro-id="{{ $reg->REGISTRO_CLASE_ID }}"
             data-dictado-id="{{ $reg->REGISTRO_CLASE_DICTADO_ID ?? '' }}"
+            data-curso-id="{{ $reg->REGISTRO_CLASE_CURSO_ID ?? '' }}"
             data-materia="{{ $reg->REGISTRO_CLASE_MATERIA ?? ($reg->DOCENTE_NOMBRE ?? '—') }}"
             data-curso="{{ $reg->REGISTRO_CLASE_CURSO ?? '' }}"
             data-fecha="{{ $reg->REGISTRO_CLASE_FECHA }}"
@@ -244,7 +245,7 @@
     // tablaAsistenciaCargar: si hay dictado_id lo usa directamente,
     // si no, envía "__reg__<id>" y el componente lo convierte a registro_id para el server.
     const paramCarga = d.dictadoId ? d.dictadoId : ('__reg__' + d.registroId);
-    tablaAsistenciaCargar(paramCarga, d.materia + (d.curso ? ' — ' + d.curso : ''), asistencias);
+    tablaAsistenciaCargar(paramCarga, d.materia + (d.curso ? ' — ' + d.curso : ''), asistencias, d.cursoId || null);
   }
 
   // ─────────────────────────────────────────────
@@ -252,6 +253,7 @@
   // ─────────────────────────────────────────────
   @if($preseleccionado)
     const _dictadoId = {{ $registroClase->Id_Dictado_Materia }};
+    const _cursoId   = {{ $dictadoInfo->CURSO_ID ?? 'null' }};
     const _titulo    = "{{ addslashes(($dictadoInfo->MATERIA_NOMBRE ?? '') . ' — ' . ($dictadoInfo->CURSO_NOMBRE ?? '')) }}";
 
     @php
@@ -267,7 +269,8 @@
       tablaAsistenciaCargar(
         _dictadoId,
         _titulo,
-        Object.keys(_asistencias).length ? _asistencias : null
+        Object.keys(_asistencias).length ? _asistencias : null,
+        _cursoId
       );
     });
   @endif

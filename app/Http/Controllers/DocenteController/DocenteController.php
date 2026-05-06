@@ -104,16 +104,26 @@ class DocenteController extends Controller
 
         $request->validate(['dictado_id' => 'required|integer']);
 
-        $alumnos = DB::table('view_alumnos_por_dictado_docente')
-            ->where('DICTADO_ID', $request->dictado_id)
-            ->where('USUARIO_ID', auth()->id())
-            ->orderBy('ALUMNO_APELLIDO')
-            ->select(
-                'ALUMNO_ID    as id',
-                'ALUMNO_NOMBRE    as nombre',
-                'ALUMNO_APELLIDO  as apellido'
-            )
-            ->get();
+        if ($request->filled('curso_id')) {
+            $alumnos = DB::table('view_alumnos_por_dictado_docente as v')
+                ->join('alumnos as a', 'a.id', '=', 'v.ALUMNO_ID')
+                ->where('v.DICTADO_ID', $request->dictado_id)
+                ->where('v.USUARIO_ID', auth()->id())
+                ->where(function ($q) use ($request) {
+                    $q->where('a.id_grupo_taller_actual', $request->curso_id)
+                      ->orWhere('a.id_curso_actual', $request->curso_id);
+                })
+                ->orderBy('v.ALUMNO_APELLIDO')
+                ->select('v.ALUMNO_ID as id', 'v.ALUMNO_NOMBRE as nombre', 'v.ALUMNO_APELLIDO as apellido')
+                ->get();
+        } else {
+            $alumnos = DB::table('view_alumnos_por_dictado_docente')
+                ->where('DICTADO_ID', $request->dictado_id)
+                ->where('USUARIO_ID', auth()->id())
+                ->orderBy('ALUMNO_APELLIDO')
+                ->select('ALUMNO_ID as id', 'ALUMNO_NOMBRE as nombre', 'ALUMNO_APELLIDO as apellido')
+                ->get();
+        }
 
         return response()->json($alumnos);
     }

@@ -139,7 +139,8 @@ const _ALUMNOS_URL = "{{ route('docentes.alumnos') }}";
 
 // asistencias: objeto opcional { alumnoId: { estado, hora_tarde, hora_retiro }, ... }
 // dictadoId puede ser un número (dictado_id) o la string "__reg__<n>" (registro_id)
-async function tablaAsistenciaCargar(dictadoId, titulo, asistencias = null) {
+// cursoId: opcional, filtra por id_grupo_taller_actual o id_curso_actual del alumno
+async function tablaAsistenciaCargar(dictadoId, titulo, asistencias = null, cursoId = null) {
   const tbody  = document.getElementById('asist-body');
   const titEl  = document.getElementById('asist-titulo');
   const subEl  = document.getElementById('asist-subtitulo');
@@ -150,6 +151,7 @@ async function tablaAsistenciaCargar(dictadoId, titulo, asistencias = null) {
     const params = String(dictadoId).startsWith('__reg__')
       ? { registro_id: String(dictadoId).replace('__reg__', '') }
       : { dictado_id: dictadoId };
+    if (cursoId) params.curso_id = cursoId;
     const res = await fetch(`${_ALUMNOS_URL}?` + new URLSearchParams(params));
     if (!res.ok) throw new Error('Error del servidor');
     const alumnos = await res.json();
