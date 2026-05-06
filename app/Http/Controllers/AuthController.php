@@ -41,6 +41,8 @@ class AuthController extends Controller
         // si es true, la sesión dura semanas; si es false, solo la pestaña.
         $remember = $request->boolean('remember');
 
+        $isAjax = $request->wantsJson();
+
         // Modo debug: login rápido comparando contra contrasenia_dev (texto plano).
         // Permite usar contraseñas simples de prueba sin tocar el hash de producción.
         if (config('app.debug')) {
@@ -48,22 +50,21 @@ class AuthController extends Controller
             if ($user && $user->contrasenia_dev === $request->password) {
                 Auth::login($user, $remember);
                 $request->session()->regenerate();
+                if ($isAjax) return response()->json(['ok' => true]);
                 return redirect()->intended(route('dashboard'));
             }
         }
 
         if (Auth::attempt($credentials, $remember)) {
-            // Regenerar el ID de sesión previene "session fixation attacks"
-            // (un atacante no puede fijar el ID de sesión antes del login)
             $request->session()->regenerate();
-
-            // intended() redirige a la URL que el usuario quería ir
-            // antes de ser mandado al login. Si no había ninguna, va al dashboard.
+            if ($isAjax) return response()->json(['ok' => true]);
             return redirect()->intended(route('dashboard'));
         }
 
-        // Si las credenciales son incorrectas, vuelve al formulario
-        // con el error en el campo 'email' y conservando el valor del email.
+        if ($isAjax) {
+            return response()->json(['error' => 'El email o la contraseña son incorrectos.'], 422);
+        }
+
         return back()
             ->withErrors(['email' => 'El email o la contraseña son incorrectos.'])
             ->onlyInput('email');

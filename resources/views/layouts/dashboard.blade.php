@@ -244,5 +244,6 @@
   }
 </script>
 @stack('scripts')
+<x-session-modal />
 </body>
 </html>

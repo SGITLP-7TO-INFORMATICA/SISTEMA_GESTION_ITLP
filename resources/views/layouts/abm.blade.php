@@ -477,5 +477,6 @@
 </script>
 @stack('scripts')
 @livewireScripts
+<x-session-modal />
 </body>
 </html>

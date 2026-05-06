@@ -25,6 +25,10 @@ Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Token CSRF público: genera/devuelve el token de la sesión actual (anónima o autenticada).
+// Lo usa el modal de re-login para poder hacer el POST /login vía fetch sin error 419.
+Route::get('/csrf-token-public', fn() => response()->json(['token' => csrf_token()]))->name('csrf.token.public');
+
 
 // ══════════════════════════════════════════════════
 // RUTAS PROTEGIDAS — requieren sesión activa
@@ -34,6 +38,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // de autenticación de Laravel. Si el usuario no está logueado,
 // lo redirige a la ruta 'login' definida arriba.
 Route::middleware('auth')->group(function () {
+
+    // ── Utilidades de sesión (AJAX) ──
+    Route::get('/ping',       fn() => response()->json(['ok' => true]))->name('ping');
+    Route::get('/csrf-token', fn() => response()->json(['token' => csrf_token()]))->name('csrf.token');
 
     // ── Panel principal ──
     Route::get('/', function () {

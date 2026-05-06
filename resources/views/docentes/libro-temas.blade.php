@@ -405,6 +405,9 @@
     moduloDia = (optCargado?.dataset.dia || '').trim().toUpperCase();
     verificarFechaConModulo();
 
+    // Limpiar errores de validación de intentos anteriores
+    document.querySelectorAll('#main-form .text-danger:not(span)').forEach(el => el.remove());
+
     document.getElementById('banner-edicion').classList.add('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
     setModoEditar(true);
@@ -443,11 +446,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     const sel = document.getElementById('dictado_id');
     if (sel?.value) sel.dispatchEvent(new Event('change'));
-
-    const lastId = {{ $verRegistroId ?? 'null' }};
-    if (lastId) {
-      Livewire.on('cargar-registro', () => {}); // esperar a que Livewire esté listo
-    }
   });
+
+  const lastId = {{ $verRegistroId ?? 'null' }};
+  if (lastId) {
+    // Esperar a que Livewire esté inicializado antes de despachar el evento
+    document.addEventListener('livewire:initialized', () => {
+      Livewire.dispatch('seleccionar-registro', { id: lastId });
+    });
+  }
 </script>
 @endpush

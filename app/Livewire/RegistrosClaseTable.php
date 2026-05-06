@@ -37,6 +37,12 @@ class RegistrosClaseTable extends Component
         $this->selectedId = null;
     }
 
+    #[On('seleccionar-registro')]
+    public function seleccionarRegistro(int $id): void
+    {
+        $this->cargarRegistro($id);
+    }
+
     public function eliminarRegistro(int $id): void
     {
         // Verificación de seguridad: no eliminar si ya tiene asistencias cargadas

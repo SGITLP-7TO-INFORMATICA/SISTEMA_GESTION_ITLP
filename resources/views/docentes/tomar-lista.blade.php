@@ -81,6 +81,7 @@
             onclick="seleccionarRegistro(this)"
             data-registro-id="{{ $reg->REGISTRO_CLASE_ID }}"
             data-dictado-id="{{ $reg->REGISTRO_CLASE_DICTADO_ID ?? '' }}"
+            data-curso-id="{{ $reg->REGISTRO_CLASE_CURSO_ID ?? '' }}"
             data-materia="{{ $reg->REGISTRO_CLASE_MATERIA ?? ($reg->DOCENTE_NOMBRE ?? '—') }}"
             data-curso="{{ $reg->REGISTRO_CLASE_CURSO ?? '' }}"
             data-fecha="{{ $reg->REGISTRO_CLASE_FECHA }}"
@@ -175,6 +176,22 @@
 
   {{-- ── TABLA DE ASISTENCIA ── --}}
   <div id="tabla-asistencia-wrap" style="{{ $preseleccionado ? '' : 'display:none' }}">
+
+    {{-- Acciones masivas --}}
+    <div class="flex items-center gap-2 mb-3">
+      <span class="text-[11px] font-semibold text-muted2 uppercase tracking-[0.1em] mr-1">Marcar todos:</span>
+      <button type="button" onclick="marcarTodos('1')"
+        class="inline-flex items-center gap-[6px] px-3 py-[6px] rounded-lg border border-success/40 bg-success/[0.07] text-success font-sans text-[12px] font-medium cursor-pointer transition-[background,border-color] duration-150 hover:bg-success/[0.14] hover:border-success/70">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Presentes
+      </button>
+      <button type="button" onclick="marcarTodos('2')"
+        class="inline-flex items-center gap-[6px] px-3 py-[6px] rounded-lg border border-danger/40 bg-danger/[0.07] text-danger font-sans text-[12px] font-medium cursor-pointer transition-[background,border-color] duration-150 hover:bg-danger/[0.14] hover:border-danger/70">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        Ausentes
+      </button>
+    </div>
+
     <x-tabla-asistencia />
   </div>
 
@@ -244,7 +261,7 @@
     // tablaAsistenciaCargar: si hay dictado_id lo usa directamente,
     // si no, envía "__reg__<id>" y el componente lo convierte a registro_id para el server.
     const paramCarga = d.dictadoId ? d.dictadoId : ('__reg__' + d.registroId);
-    tablaAsistenciaCargar(paramCarga, d.materia + (d.curso ? ' — ' + d.curso : ''), asistencias);
+    tablaAsistenciaCargar(paramCarga, d.materia + (d.curso ? ' — ' + d.curso : ''), asistencias, d.cursoId || null);
   }
 
   // ─────────────────────────────────────────────
@@ -252,6 +269,7 @@
   // ─────────────────────────────────────────────
   @if($preseleccionado)
     const _dictadoId = {{ $registroClase->Id_Dictado_Materia }};
+    const _cursoId   = {{ $dictadoInfo->CURSO_ID ?? 'null' }};
     const _titulo    = "{{ addslashes(($dictadoInfo->MATERIA_NOMBRE ?? '') . ' — ' . ($dictadoInfo->CURSO_NOMBRE ?? '')) }}";
 
     @php
@@ -267,10 +285,23 @@
       tablaAsistenciaCargar(
         _dictadoId,
         _titulo,
-        Object.keys(_asistencias).length ? _asistencias : null
+        Object.keys(_asistencias).length ? _asistencias : null,
+        _cursoId
       );
     });
   @endif
+
+  // ─────────────────────────────────────────────
+  // Marcar todos los alumnos con el mismo estado
+  // ─────────────────────────────────────────────
+  function marcarTodos(valor) {
+    document.querySelectorAll('select[name^="asistencia["]').forEach(sel => {
+      const alumnoId = sel.name.match(/asistencia\[(\d+)\]/)?.[1];
+      if (!alumnoId) return;
+      sel.value = valor;
+      onEstadoCambio(sel, alumnoId);
+    });
+  }
 
   // ─────────────────────────────────────────────
   // Habilitar FAB cuando todos los alumnos tienen estado
