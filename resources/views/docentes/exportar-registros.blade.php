@@ -9,6 +9,25 @@
 @section('fab-form', 'form-exportar')
 @section('fab-label', 'Descargar Excel')
 
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const select = document.getElementById('dictado_id');
+    const aviso  = document.getElementById('aviso-zip');
+    const fabTxt = document.getElementById('btn-fab-txt');
+
+    function actualizar() {
+      const sinMateria = select.value === '';
+      aviso.style.display  = sinMateria ? 'flex' : 'none';
+      if (fabTxt) fabTxt.textContent = sinMateria ? 'Descargar ZIP (todas)' : 'Descargar Excel';
+    }
+
+    select.addEventListener('change', actualizar);
+    actualizar(); // estado inicial
+  });
+</script>
+@endpush
+
 @push('styles')
 <style>
   /* FAB verde para descarga — override del layout con !important */
@@ -56,7 +75,6 @@
                 id="dictado_id"
                 name="dictado_id"
                 class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
-                required
               >
                 <option value="">— Seleccioná una materia —</option>
                 @foreach($dictados as $d)
@@ -68,6 +86,11 @@
               @error('dictado_id')
                 <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
+              {{-- Aviso: sin materia se descarga ZIP con todas --}}
+              <div id="aviso-zip" class="items-center gap-2 bg-accent/[0.07] border border-accent/25 rounded-lg px-3 py-[9px] text-[12px] text-accent2 mt-1" style="display:none;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Sin materia seleccionada se descargará un <strong class="font-semibold">archivo ZIP</strong> con los registros de todas tus materias, uno por archivo.
+              </div>
             </div>
           </div>
 

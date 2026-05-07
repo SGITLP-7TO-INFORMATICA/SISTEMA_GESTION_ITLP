@@ -10,43 +10,110 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use ZipArchive;
 
 class ExportarRegistrosClasesExcel
 {
     public function descargar(Request $request)
     {
         $request->validate([
-            'dictado_id'  => 'required|integer',
+            'dictado_id'  => 'nullable|integer',
             'fecha_desde' => 'nullable|date',
             'fecha_hasta' => 'nullable|date|after_or_equal:fecha_desde',
         ]);
 
+        $fechaDesde = $request->filled('fecha_desde') ? $request->fecha_desde : null;
+        $fechaHasta = $request->filled('fecha_hasta') ? $request->fecha_hasta : null;
+
+        // ── Sin materia seleccionada: ZIP con todas las materias ──
+        if (! $request->filled('dictado_id')) {
+            return $this->descargarTodos($fechaDesde, $fechaHasta);
+        }
+
+        // ── Con materia seleccionada: un solo Excel ──
         $dictado = DB::table('view_docentes_materias_dictadas')
             ->where('DICTADO_ID', $request->dictado_id)
-            ->where('USUARIO_ID', auth()->id())
+            ->where('USUARIO_ID', auth()->user()?->id)
             ->first();
 
-        abort_if(!$dictado, 403, 'Dictado no encontrado.');
+        abort_if(! $dictado, 403, 'Dictado no encontrado.');
 
+        $spreadsheet  = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta);
+        $nombreArchivo = $this->nombreArchivo($dictado->MATERIA_NOMBRE);
+        $writer        = new Xlsx($spreadsheet);
+
+        return response()->streamDownload(function () use ($writer) {
+            $writer->save('php://output');
+        }, $nombreArchivo, [
+            'Content-Type'  => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // ZIP con un Excel por cada materia del docente
+    // ──────────────────────────────────────────────────────────────
+    private function descargarTodos(?string $fechaDesde, ?string $fechaHasta)
+    {
+        $dictados = DB::table('view_docentes_materias_dictadas')
+            ->where('USUARIO_ID', auth()->user()?->id)
+            ->get();
+
+        abort_if($dictados->isEmpty(), 404, 'No tenés materias asignadas.');
+
+        $zipPath  = tempnam(sys_get_temp_dir(), 'export_') . '.zip';
+        $zip      = new ZipArchive();
+        $tmpFiles = [];
+
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        foreach ($dictados as $dictado) {
+            $spreadsheet = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta);
+            $writer      = new Xlsx($spreadsheet);
+            $tmpFile     = tempnam(sys_get_temp_dir(), 'xlsx_');
+            $writer->save($tmpFile);
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet);
+
+            $zip->addFile($tmpFile, $this->nombreArchivo($dictado->MATERIA_NOMBRE));
+            $tmpFiles[] = $tmpFile;
+        }
+
+        $zip->close();
+
+        // Limpiar archivos temporales individuales
+        foreach ($tmpFiles as $f) {
+            @unlink($f);
+        }
+
+        $apellido  = strtoupper(str_replace(' ', '_', auth()->user()?->apellido ?? 'Docente'));
+        $nombreZip = 'Registros_Materias_' . $apellido . '_' . now()->format('Ymd') . '.zip';
+
+        return response()->download($zipPath, $nombreZip, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // Genera el Spreadsheet completo (3 hojas) para un dictado
+    // ──────────────────────────────────────────────────────────────
+    private function generarSpreadsheet(object $dictado, ?string $fechaDesde, ?string $fechaHasta): Spreadsheet
+    {
         // ── Registros de clase ──
         $query = DB::table('docentes_registro_clases')
-            ->where('Id_Dictado_Materia', $request->dictado_id)
+            ->where('Id_Dictado_Materia', $dictado->DICTADO_ID)
             ->orderBy('Fecha_Clase')
             ->orderBy('Numero_Clase');
 
-        if ($request->filled('fecha_desde')) {
-            $query->where('Fecha_Clase', '>=', $request->fecha_desde);
-        }
-        if ($request->filled('fecha_hasta')) {
-            $query->where('Fecha_Clase', '<=', $request->fecha_hasta);
-        }
+        if ($fechaDesde) $query->where('Fecha_Clase', '>=', $fechaDesde);
+        if ($fechaHasta) $query->where('Fecha_Clase', '<=', $fechaHasta);
 
         $registros = $query->get();
 
         // ── Alumnos del dictado ──
         $alumnos = DB::table('alumnos')
             ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
-            ->where('mxm.id_Materia_Dictado', $request->dictado_id)
+            ->where('mxm.id_Materia_Dictado', $dictado->DICTADO_ID)
             ->orderBy('alumnos.apellido')
             ->orderBy('alumnos.nombre')
             ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
@@ -64,7 +131,7 @@ class ExportarRegistrosClasesExcel
         // ── Trabajos prácticos ──
         $trabajos = DB::table('docentes_trabajos as t')
             ->join('mxm_docentes_trabajos_dictados as mx', 'mx.id_trabajo', '=', 't.id')
-            ->where('mx.id_dictado', $request->dictado_id)
+            ->where('mx.id_dictado', $dictado->DICTADO_ID)
             ->orderBy('t.numero_trabajo')
             ->select('t.id', 't.numero_trabajo', 't.titulo', 't.fecha_apertura', 't.fecha_cierre', 't.fecha_creacion')
             ->get();
@@ -77,13 +144,13 @@ class ExportarRegistrosClasesExcel
                 ->groupBy('id_trabajo');
         }
 
-        // ── Etiquetas comunes ──
-        $fillHeader = ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']];
-        $fontHeader = ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 10];
+        // ── Estilos comunes ──
+        $fillHeader  = ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF1E3A5F']];
+        $fontHeader  = ['bold' => true, 'color' => ['argb' => 'FFFFFFFF'], 'size' => 10];
         $alignCenter = ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER];
 
-        $periodoLabel = ($request->filled('fecha_desde') || $request->filled('fecha_hasta'))
-            ? 'Período: ' . ($request->fecha_desde ?? '—') . ' al ' . ($request->fecha_hasta ?? '—')
+        $periodoLabel = ($fechaDesde || $fechaHasta)
+            ? 'Período: ' . ($fechaDesde ?? '—') . ' al ' . ($fechaHasta ?? '—')
             : 'Período: completo';
 
         $spreadsheet = new Spreadsheet();
@@ -91,7 +158,7 @@ class ExportarRegistrosClasesExcel
         // ══════════════════════════════════════════
         // Hoja 1 — Libro de Temas
         // ══════════════════════════════════════════
-        $sheet1 = $spreadsheet->getActiveSheet();
+        $sheet1   = $spreadsheet->getActiveSheet();
         $sheet1->setTitle('Libro de Temas');
 
         $headers1 = ['N° Clase', 'Fecha', 'Objetivo de la Clase', 'Contenidos Vistos', 'Actividades Desarrolladas', 'Observaciones'];
@@ -135,8 +202,8 @@ class ExportarRegistrosClasesExcel
         $sheet1->getRowDimension($headerRow)->setRowHeight(18);
 
         foreach ($registros as $i => $reg) {
-            $row    = $headerRow + 1 + $i;
-            $zebra  = ($i % 2 === 0) ? 'FFF8FAFF' : 'FFEEF2FF';
+            $row   = $headerRow + 1 + $i;
+            $zebra = ($i % 2 === 0) ? 'FFF8FAFF' : 'FFEEF2FF';
 
             $sheet1->getCell("A{$row}")->setValue($reg->Numero_Clase);
             $sheet1->getCell("B{$row}")->setValue($reg->Fecha_Clase);
@@ -164,10 +231,10 @@ class ExportarRegistrosClasesExcel
         // ══════════════════════════════════════════
         // Hoja 2 — Asistencias Alumnos
         // ══════════════════════════════════════════
-        $sheet2     = $spreadsheet->createSheet();
+        $sheet2    = $spreadsheet->createSheet();
         $sheet2->setTitle('Asistencias Alumnos');
 
-        $totalCols    = 2 + count($alumnos);
+        $totalCols     = 2 + count($alumnos);
         $lastColLetter = Coordinate::stringFromColumnIndex($totalCols);
 
         $sheet2->mergeCells("A1:{$lastColLetter}1");
@@ -268,8 +335,8 @@ class ExportarRegistrosClasesExcel
         $sheet3      = $spreadsheet->createSheet();
         $sheet3->setTitle('Trabajos Prácticos');
 
-        $colsTrabajo  = 7; // Fecha Creación, Fecha Apertura, Fecha Cierre, Nota Indiv., Grupo, Nota Grupal, Observaciones
-        $totalCols3   = 1 + count($trabajos) * $colsTrabajo;
+        $colsTrabajo    = 7;
+        $totalCols3     = 1 + count($trabajos) * $colsTrabajo;
         $lastColLetter3 = Coordinate::stringFromColumnIndex($totalCols3);
 
         $sheet3->mergeCells("A1:{$lastColLetter3}1");
@@ -287,7 +354,6 @@ class ExportarRegistrosClasesExcel
         $sheet3->getRowDimension(1)->setRowHeight(22);
         $sheet3->getRowDimension(2)->setRowHeight(16);
 
-        // Fila 3: nombre de cada TP agrupado
         $sheet3->getCell('A3')->setValue('Alumno');
         $sheet3->getStyle('A3')->applyFromArray([
             'font'      => $fontHeader,
@@ -311,7 +377,6 @@ class ExportarRegistrosClasesExcel
             ]);
         }
 
-        // Fila 4: sub-encabezados
         $subHeaders = ['Fecha Creación', 'Fecha Apertura', 'Fecha Cierre', 'Nota Indiv.', 'Grupo', 'Nota Grupal', 'Observaciones'];
         $sheet3->getCell('A4')->setValue('');
         $sheet3->getStyle('A4')->applyFromArray([
@@ -333,7 +398,6 @@ class ExportarRegistrosClasesExcel
             }
         }
 
-        // Datos: una fila por alumno
         foreach ($alumnos as $aIdx => $alumno) {
             $row   = 5 + $aIdx;
             $zebra = ($aIdx % 2 === 0) ? 'FFF8FAFF' : 'FFEEF2FF';
@@ -376,7 +440,6 @@ class ExportarRegistrosClasesExcel
             }
         }
 
-        // Anchos hoja 3
         $sheet3->getColumnDimension('A')->setWidth(30);
         $widths = [14, 14, 14, 12, 12, 12, 45];
         foreach ($trabajos as $tIdx => $tp) {
@@ -386,17 +449,13 @@ class ExportarRegistrosClasesExcel
         }
         $sheet3->freezePane('B5');
 
-        // ── Generar y descargar ──
         $spreadsheet->setActiveSheetIndex(0);
-        $nombreArchivo = 'Registros_' . str_replace(' ', '_', $dictado->MATERIA_NOMBRE) . '_' . now()->format('Ymd') . '.xlsx';
 
-        $writer = new Xlsx($spreadsheet);
+        return $spreadsheet;
+    }
 
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $nombreArchivo, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Cache-Control' => 'max-age=0',
-        ]);
+    private function nombreArchivo(string $materiaNombre): string
+    {
+        return 'Registros_' . str_replace(' ', '_', $materiaNombre) . '_' . now()->format('Ymd') . '.xlsx';
     }
 }
