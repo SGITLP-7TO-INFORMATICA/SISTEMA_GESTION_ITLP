@@ -30,16 +30,23 @@ class ExportarRegistrosClasesExcel
             return $this->descargarTodos($fechaDesde, $fechaHasta);
         }
 
-        // ── Con materia seleccionada: un solo Excel ──
-        $dictado = DB::table('view_docentes_materias_dictadas')
+        // ── Con materia seleccionada: uno o varios cursos ──
+        $dictados = DB::table('view_docentes_materias_dictadas')
             ->where('DICTADO_ID', $request->dictado_id)
             ->where('USUARIO_ID', auth()->user()?->id)
-            ->first();
+            ->get();
 
-        abort_if(! $dictado, 403, 'Dictado no encontrado.');
+        abort_if($dictados->isEmpty(), 403, 'Dictado no encontrado.');
 
-        $spreadsheet  = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta);
-        $nombreArchivo = $this->nombreArchivo($dictado->MATERIA_NOMBRE);
+        // Múltiples cursos → ZIP con un Excel por curso
+        if ($dictados->count() > 1) {
+            return $this->descargarVariosCursos($dictados, $fechaDesde, $fechaHasta);
+        }
+
+        // Un solo curso → Excel directo
+        $dictado       = $dictados->first();
+        $spreadsheet   = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta, $dictado->CURSO_ID ?? null);
+        $nombreArchivo = $this->nombreArchivo($dictado->MATERIA_NOMBRE, $dictado->CURSO_NOMBRE);
         $writer        = new Xlsx($spreadsheet);
 
         return response()->streamDownload(function () use ($writer) {
@@ -68,14 +75,14 @@ class ExportarRegistrosClasesExcel
         $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
 
         foreach ($dictados as $dictado) {
-            $spreadsheet = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta);
+            $spreadsheet = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta, $dictado->CURSO_ID ?? null);
             $writer      = new Xlsx($spreadsheet);
             $tmpFile     = tempnam(sys_get_temp_dir(), 'xlsx_');
             $writer->save($tmpFile);
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet);
 
-            $zip->addFile($tmpFile, $this->nombreArchivo($dictado->MATERIA_NOMBRE));
+            $zip->addFile($tmpFile, $this->nombreArchivo($dictado->MATERIA_NOMBRE, $dictado->CURSO_NOMBRE));
             $tmpFiles[] = $tmpFile;
         }
 
@@ -95,9 +102,49 @@ class ExportarRegistrosClasesExcel
     }
 
     // ──────────────────────────────────────────────────────────────
+    // ZIP con un Excel por cada curso de un mismo dictado
+    // ──────────────────────────────────────────────────────────────
+    private function descargarVariosCursos(
+        \Illuminate\Support\Collection $dictados,
+        ?string $fechaDesde,
+        ?string $fechaHasta
+    ) {
+        $zipPath  = tempnam(sys_get_temp_dir(), 'export_') . '.zip';
+        $zip      = new ZipArchive();
+        $tmpFiles = [];
+
+        $zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+        foreach ($dictados as $dictado) {
+            $spreadsheet = $this->generarSpreadsheet($dictado, $fechaDesde, $fechaHasta, $dictado->CURSO_ID ?? null);
+            $writer      = new Xlsx($spreadsheet);
+            $tmpFile     = tempnam(sys_get_temp_dir(), 'xlsx_');
+            $writer->save($tmpFile);
+            $spreadsheet->disconnectWorksheets();
+            unset($spreadsheet);
+
+            $zip->addFile($tmpFile, $this->nombreArchivo($dictado->MATERIA_NOMBRE, $dictado->CURSO_NOMBRE));
+            $tmpFiles[] = $tmpFile;
+        }
+
+        $zip->close();
+
+        foreach ($tmpFiles as $f) {
+            @unlink($f);
+        }
+
+        $materia   = str_replace(' ', '_', $dictados->first()->MATERIA_NOMBRE);
+        $nombreZip = 'Registros_' . $materia . '_Cursos_' . now()->format('Ymd') . '.zip';
+
+        return response()->download($zipPath, $nombreZip, [
+            'Content-Type' => 'application/zip',
+        ])->deleteFileAfterSend(true);
+    }
+
+    // ──────────────────────────────────────────────────────────────
     // Genera el Spreadsheet completo (3 hojas) para un dictado
     // ──────────────────────────────────────────────────────────────
-    private function generarSpreadsheet(object $dictado, ?string $fechaDesde, ?string $fechaHasta): Spreadsheet
+    private function generarSpreadsheet(object $dictado, ?string $fechaDesde, ?string $fechaHasta, ?int $cursoId = null): Spreadsheet
     {
         // ── Registros de clase ──
         $query = DB::table('docentes_registro_clases')
@@ -110,10 +157,16 @@ class ExportarRegistrosClasesExcel
 
         $registros = $query->get();
 
-        // ── Alumnos del dictado ──
-        $alumnos = DB::table('alumnos')
+        // ── Alumnos del dictado (filtrados por curso si se especifica) ──
+        $alumnosQuery = DB::table('alumnos')
             ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
-            ->where('mxm.id_Materia_Dictado', $dictado->DICTADO_ID)
+            ->where('mxm.id_Materia_Dictado', $dictado->DICTADO_ID);
+
+        if ($cursoId) {
+            $alumnosQuery->where('alumnos.id_curso_actual', $cursoId);
+        }
+
+        $alumnos = $alumnosQuery
             ->orderBy('alumnos.apellido')
             ->orderBy('alumnos.nombre')
             ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
@@ -454,8 +507,12 @@ class ExportarRegistrosClasesExcel
         return $spreadsheet;
     }
 
-    private function nombreArchivo(string $materiaNombre): string
+    private function nombreArchivo(string $materiaNombre, string $cursoNombre = ''): string
     {
-        return 'Registros_' . str_replace(' ', '_', $materiaNombre) . '_' . now()->format('Ymd') . '.xlsx';
+        $base = 'Registros_' . str_replace(' ', '_', $materiaNombre);
+        if ($cursoNombre !== '') {
+            $base .= '_' . str_replace(' ', '_', $cursoNombre);
+        }
+        return $base . '_' . now()->format('Ymd') . '.xlsx';
     }
 }
