@@ -108,6 +108,7 @@
       <tr>
         <th style="width:50px">N°</th>
         <th>Nombre y apellido</th>
+        <th style="width:140px">Curso</th>
         <th style="min-width:300px">Asistencia</th>
       </tr>
     </thead>
@@ -180,6 +181,7 @@ async function tablaAsistenciaCargar(dictadoId, titulo, asistencias = null, curs
       <tr>
         <td class="num">${i + 1}</td>
         <td>${a.apellido}, ${a.nombre}</td>
+        <td class="num" style="font-size:11.5px; color:var(--muted);">${a.curso ?? '—'}</td>
         <td>
           <div class="asistencia-cell">
             <select
