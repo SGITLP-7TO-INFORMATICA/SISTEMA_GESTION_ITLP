@@ -144,7 +144,7 @@ class ExportarRegistrosClasesExcel
     // ──────────────────────────────────────────────────────────────
     // Genera el Spreadsheet completo (3 hojas) para un dictado
     // ──────────────────────────────────────────────────────────────
-    private function generarSpreadsheet(object $dictado, ?string $fechaDesde, ?string $fechaHasta, ?int $cursoId = null): Spreadsheet
+    private function generarSpreadsheet(object $dictado, ?string $fechaDesde, ?string $fechaHasta): Spreadsheet
     {
         // ── Registros de clase ──
         $query = DB::table('docentes_registro_clases')
@@ -157,19 +157,15 @@ class ExportarRegistrosClasesExcel
 
         $registros = $query->get();
 
-        // ── Alumnos del dictado (filtrados por curso si se especifica) ──
-        $alumnosQuery = DB::table('alumnos')
-            ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
-            ->where('mxm.id_Materia_Dictado', $dictado->DICTADO_ID);
-
-        if ($cursoId) {
-            $alumnosQuery->where('alumnos.id_curso_actual', $cursoId);
-        }
-
-        $alumnos = $alumnosQuery
-            ->orderBy('alumnos.apellido')
-            ->orderBy('alumnos.nombre')
-            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
+        // ── Alumnos del dictado ──
+        // Usa la misma view que getAlumnos(): combina inscripción directa y por curso.
+        $alumnos = DB::table('view_alumnos_por_dictado_docente as v')
+            ->join('alumnos as a', 'a.id', '=', 'v.ALUMNO_ID')
+            ->where('v.DICTADO_ID', $dictado->DICTADO_ID)
+            ->orderBy('v.ALUMNO_APELLIDO')
+            ->orderBy('v.ALUMNO_NOMBRE')
+            ->select('v.ALUMNO_ID as id', 'v.ALUMNO_NOMBRE as nombre', 'v.ALUMNO_APELLIDO as apellido')
+            ->distinct()
             ->get();
 
         // ── Asistencias ──
@@ -388,7 +384,7 @@ class ExportarRegistrosClasesExcel
         $sheet3      = $spreadsheet->createSheet();
         $sheet3->setTitle('Trabajos Prácticos');
 
-        $colsTrabajo    = 7;
+        $colsTrabajo    = 4;
         $totalCols3     = 1 + count($trabajos) * $colsTrabajo;
         $lastColLetter3 = Coordinate::stringFromColumnIndex($totalCols3);
 
@@ -430,7 +426,7 @@ class ExportarRegistrosClasesExcel
             ]);
         }
 
-        $subHeaders = ['Fecha Creación', 'Fecha Apertura', 'Fecha Cierre', 'Nota Indiv.', 'Grupo', 'Nota Grupal', 'Observaciones'];
+        $subHeaders = ['Nota Indiv.', 'Grupo', 'Nota Grupal', 'Observaciones'];
         $sheet3->getCell('A4')->setValue('');
         $sheet3->getStyle('A4')->applyFromArray([
             'fill'    => $fillHeader,
@@ -469,9 +465,6 @@ class ExportarRegistrosClasesExcel
                 $startCol = 2 + $tIdx * $colsTrabajo;
 
                 $vals = [
-                    $tp->fecha_creacion ? substr($tp->fecha_creacion, 0, 10) : '',
-                    $tp->fecha_apertura ? substr($tp->fecha_apertura, 0, 10) : '',
-                    $tp->fecha_cierre   ? substr($tp->fecha_cierre,   0, 10) : '',
                     $nota->nota_individual ?? '',
                     $nota->grupo           ?? '',
                     $nota->nota_grupal     ?? '',
@@ -480,7 +473,7 @@ class ExportarRegistrosClasesExcel
 
                 foreach ($vals as $vIdx => $val) {
                     $colLtr = Coordinate::stringFromColumnIndex($startCol + $vIdx);
-                    $isObs  = ($vIdx === 6);
+                    $isObs  = ($vIdx === 3);
                     $sheet3->setCellValue("{$colLtr}{$row}", $val);
                     $sheet3->getStyle("{$colLtr}{$row}")->applyFromArray([
                         'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => $zebra]],
@@ -494,7 +487,7 @@ class ExportarRegistrosClasesExcel
         }
 
         $sheet3->getColumnDimension('A')->setWidth(30);
-        $widths = [14, 14, 14, 12, 12, 12, 45];
+        $widths = [12, 12, 12, 45];
         foreach ($trabajos as $tIdx => $tp) {
             foreach ($widths as $wIdx => $w) {
                 $sheet3->getColumnDimension(Coordinate::stringFromColumnIndex(2 + $tIdx * $colsTrabajo + $wIdx))->setWidth($w);
