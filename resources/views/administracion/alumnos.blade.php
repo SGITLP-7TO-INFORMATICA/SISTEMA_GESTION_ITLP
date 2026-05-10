@@ -35,7 +35,7 @@
   {{-- ── COLUMNA IZQUIERDA ── --}}
   <div class="flex flex-col gap-4 flex-1 min-w-[340px] max-w-[800px]">
 
-    <form method="POST" action="{{ route('administracion.alumnos.guardar') }}" id="main-form" class="flex flex-col gap-4">
+    <form method="POST" action="{{ route('administracion.alumnos.guardar') }}" id="main-form" class="flex flex-col gap-4" autocomplete="off">
       @csrf
       <input type="hidden" name="alumno_id" id="alumno_id" value="" />
 

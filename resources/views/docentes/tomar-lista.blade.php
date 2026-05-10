@@ -190,6 +190,11 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         Ausentes
       </button>
+      <button type="button" onclick="marcarTodos('4')"
+        class="inline-flex items-center gap-[6px] px-3 py-[6px] rounded-lg border border-accent2/40 bg-accent2/[0.07] text-accent2 font-sans text-[12px] font-medium cursor-pointer transition-[background,border-color] duration-150 hover:bg-accent2/[0.14] hover:border-accent2/70">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12h6M12 9v6"/></svg>
+        Justificados
+      </button>
     </div>
 
     <x-tabla-asistencia />
@@ -206,6 +211,14 @@
 
 @push('scripts')
 <script>
+  // Ocultar FAB si no hay registro pre-seleccionado
+  @if(! $preseleccionado)
+  document.addEventListener('DOMContentLoaded', () => {
+    const fab = document.getElementById('btn-fab');
+    if (fab) fab.style.display = 'none';
+  });
+  @endif
+
   // ─────────────────────────────────────────────
   // MODO SELECTOR: el usuario hace click en una fila de la tabla de registros
   // ─────────────────────────────────────────────
@@ -244,10 +257,12 @@
     const fabTxt = document.getElementById('btn-fab-txt');
     if (fabTxt) fabTxt.textContent = tieneAsistencias ? 'Actualizar asistencia' : 'Confirmar asistencia';
 
-    // Mostrar info card, tabla y barra de estado
+    // Mostrar info card, tabla, barra de estado y FAB
     document.getElementById('registro-info-card').style.display = '';
     document.getElementById('tabla-asistencia-wrap').style.display = '';
     document.getElementById('action-bar').style.display = '';
+    const fab = document.getElementById('btn-fab');
+    if (fab) fab.style.display = '';
 
     // Cargar asistencias si ya existen (para pre-llenar)
     let asistencias = null;

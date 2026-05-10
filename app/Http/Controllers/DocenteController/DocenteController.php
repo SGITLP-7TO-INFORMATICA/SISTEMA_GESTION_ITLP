@@ -242,7 +242,10 @@ class DocenteController extends Controller
         // Permite abrir la página con un registro ya seleccionado (desde tomar-lista)
         $verRegistroId = request('registro_id') ?? session('last_registro_id');
 
-        return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId', 'docente'));
+        // Estados de clase para el select
+        $estados = DB::table('docentes_estados_clases')->orderBy('id')->get();
+
+        return view('docentes.libro-temas', compact('dictados', 'registros', 'registrosConAsistencia', 'verRegistroId', 'docente', 'estados'));
     }
 
     // ──────────────────────────────────────────────
@@ -264,14 +267,16 @@ class DocenteController extends Controller
     public function guardarLibroTemas(Request $request)
     {
         $request->validate([
-            'dictado_id'       => 'required|integer',
-            'numero_clase'     => 'required|integer|min:1|max:9999',
-            'fecha'            => 'required|date',
-            'objetivo_clase'   => 'nullable|string|max:500',
-            'contenidos_vistos'=> 'nullable|string|max:1000',
-            'actividades'      => 'nullable|string|max:1000',
-            'observaciones'    => 'nullable|string|max:1000',
-            'observador_clase' => 'nullable|string|max:255',
+            'dictado_id'               => 'required|integer',
+            'numero_clase'             => 'required|integer|min:1|max:9999',
+            'fecha'                    => 'required|date',
+            'objetivo_clase'           => 'nullable|string|max:500',
+            'contenidos_vistos'        => 'nullable|string|max:1000',
+            'actividades'              => 'nullable|string|max:1000',
+            'observaciones'            => 'nullable|string|max:1000',
+            'observador_clase'         => 'nullable|string|max:255',
+            'id_estado_clase'          => 'nullable|integer|exists:docentes_estados_clases,id',
+            'observacion_estado_clase' => 'nullable|string|max:400',
         ]);
 
         $docente = $this->getDocente();
@@ -299,6 +304,8 @@ class DocenteController extends Controller
             'Contenidos_Vistos'        => $request->contenidos_vistos,
             'Actividades_Desarrolladas'=> $request->actividades,
             'Observaciones'            => $request->observaciones,
+            'id_estado_clase'          => $request->id_estado_clase ?: null,
+            'observacion_estado_clase' => $request->observacion_estado_clase,
         ];
 
         if ($request->filled('registro_id')) {
@@ -320,10 +327,17 @@ class DocenteController extends Controller
                 ->with('success', $msg);
         }
 
-        return redirect()
+        // Al editar un registro existente, volver a modo creación (sin pre-seleccionar).
+        // Al crear uno nuevo, entrar en modo edición del registro recién guardado.
+        $redirect = redirect()
             ->route('docentes.libro-temas')
-            ->with('success', $msg)
-            ->with('last_registro_id', $registroId);
+            ->with('success', $msg);
+
+        if (! $request->filled('registro_id')) {
+            $redirect = $redirect->with('last_registro_id', $registroId);
+        }
+
+        return $redirect;
     }
 
     // ──────────────────────────────────────────────

@@ -158,13 +158,28 @@ class ExportarRegistrosClasesExcel
         $registros = $query->get();
 
         // ── Alumnos del dictado ──
-        // Usa la misma view que getAlumnos(): combina inscripción directa y por curso.
-        $alumnos = DB::table('view_alumnos_por_dictado_docente as v')
-            ->join('alumnos as a', 'a.id', '=', 'v.ALUMNO_ID')
-            ->where('v.DICTADO_ID', $dictado->DICTADO_ID)
-            ->orderBy('v.ALUMNO_APELLIDO')
-            ->orderBy('v.ALUMNO_NOMBRE')
-            ->select('v.ALUMNO_ID as id', 'v.ALUMNO_NOMBRE as nombre', 'v.ALUMNO_APELLIDO as apellido')
+        // Query directa sobre la tabla alumnos para garantizar que aparezcan
+        // TODOS los inscriptos, incluso los que no tienen nota ni asistencia cargada.
+        $alumnos = DB::table('alumnos')
+            ->where('alumnos.activo', 1)
+            ->where(function ($q) use ($dictado) {
+                $q->whereExists(function ($sub) use ($dictado) {
+                    $sub->from('mxm_alumnos_materias')
+                        ->whereColumn('mxm_alumnos_materias.id_Alumno', 'alumnos.id')
+                        ->where('mxm_alumnos_materias.id_Materia_Dictado', $dictado->DICTADO_ID);
+                })
+                ->orWhereExists(function ($sub) use ($dictado) {
+                    $sub->from('mxm_cursos_materias_dictado')
+                        ->where('mxm_cursos_materias_dictado.id_materia_dictado', $dictado->DICTADO_ID)
+                        ->where(function ($q2) {
+                            $q2->whereColumn('mxm_cursos_materias_dictado.id_curso', 'alumnos.id_curso_actual')
+                               ->orWhereColumn('mxm_cursos_materias_dictado.id_curso', 'alumnos.id_grupo_taller_actual');
+                        });
+                });
+            })
+            ->orderBy('alumnos.apellido')
+            ->orderBy('alumnos.nombre')
+            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido')
             ->distinct()
             ->get();
 

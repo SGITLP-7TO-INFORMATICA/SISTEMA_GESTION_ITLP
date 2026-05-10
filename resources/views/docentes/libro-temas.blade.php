@@ -172,7 +172,31 @@
         </div>
       </div>
 
-      {{-- Fila 4: Observaciones (full width) --}}
+      {{-- Fila 4: Estado de Clase + Observación de estado --}}
+      <div class="flex items-start gap-3 flex-wrap border-t border-dim pt-[14px]">
+        <div class="flex flex-col gap-[5px] shrink-0 grow-0 basis-[220px]">
+          <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="id_estado_clase">Estado de clase</label>
+          <select name="id_estado_clase" id="id_estado_clase"
+            class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
+            <option value="">— Seleccioná un estado —</option>
+            @foreach($estados as $est)
+              <option value="{{ $est->id }}" {{ old('id_estado_clase') == $est->id ? 'selected' : '' }}>
+                {{ $est->nombre }}
+              </option>
+            @endforeach
+          </select>
+        </div>
+        <div class="flex flex-col gap-[5px] flex-1 min-w-[200px]">
+          <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="observacion_estado_clase">Observación de estado</label>
+          <input type="text" name="observacion_estado_clase" id="observacion_estado_clase"
+            maxlength="400"
+            placeholder="Especificá el motivo del estado…"
+            value="{{ old('observacion_estado_clase') }}"
+            class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+        </div>
+      </div>
+
+      {{-- Fila 5: Observaciones (full width) --}}
       <div class="flex items-start gap-3 flex-wrap border-t border-dim pt-[14px]">
         <div class="flex flex-col gap-[5px] w-full">
           <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="observaciones">Observaciones generales</label>
@@ -405,6 +429,10 @@
     moduloDia = (optCargado?.dataset.dia || '').trim().toUpperCase();
     verificarFechaConModulo();
 
+    // Pre-llenar estado de clase y observación
+    document.getElementById('id_estado_clase').value          = d.REGISTRO_CLASE_ID_ESTADO ?? '';
+    document.getElementById('observacion_estado_clase').value = d.REGISTRO_CLASE_OBSERVACION_ESTADO_CLASE ?? '';
+
     // Limpiar errores de validación de intentos anteriores
     document.querySelectorAll('#main-form .text-danger:not(span)').forEach(el => el.remove());
 
@@ -431,6 +459,8 @@
     document.getElementById('banner-edicion').classList.remove('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
     document.getElementById('aviso-fecha-dia').classList.remove('visible');
+    document.getElementById('id_estado_clase').value          = '';
+    document.getElementById('observacion_estado_clase').value = '';
     moduloDia = '';
     setModoEditar(false);
 
