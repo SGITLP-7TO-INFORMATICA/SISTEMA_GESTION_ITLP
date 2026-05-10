@@ -32,6 +32,7 @@
         <input
           type="text"
           wire:model.live.debounce.300ms="search"
+          autocomplete="off"
           placeholder="Nombre, apellido o legajo…"
           class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[12px] pl-7 pr-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
         />

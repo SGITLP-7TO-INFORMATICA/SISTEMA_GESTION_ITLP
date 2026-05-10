@@ -65,9 +65,11 @@ class RegistrosClaseTable extends Component
 
     public function render()
     {
-        $registros = DB::table('view_docentes_registro_clases')
-            ->where('DOCENTE_A_CARGO_ID', $this->docenteId)
-            ->orderByDesc('REGISTRO_CLASE_FECHA')
+        $registros = DB::table('view_docentes_registro_clases as v')
+            ->leftJoin('docentes_estados_clases as ec', 'ec.id', '=', 'v.REGISTRO_CLASE_ID_ESTADO')
+            ->where('v.DOCENTE_A_CARGO_ID', $this->docenteId)
+            ->selectRaw('v.*, ec.nombre as ESTADO_NOMBRE')
+            ->orderByDesc('v.REGISTRO_CLASE_FECHA')
             ->get();
 
         $registrosConAsistencia = DB::table('alumnos_asistencias')
@@ -77,6 +79,30 @@ class RegistrosClaseTable extends Component
             ->unique()
             ->toArray();
 
+        // Conteo de alumnos por dictado en una sola query
+        $dictadoIds = $registros->pluck('REGISTRO_CLASE_DICTADO_ID')->unique()->filter()->values()->toArray();
+        $alumnosPorDictado = collect();
+        if (!empty($dictadoIds)) {
+            $alumnosPorDictado = DB::table('view_alumnos_por_dictado_docente')
+                ->whereIn('DICTADO_ID', $dictadoIds)
+                ->selectRaw('DICTADO_ID, COUNT(DISTINCT ALUMNO_ID) as total')
+                ->groupBy('DICTADO_ID')
+                ->pluck('total', 'DICTADO_ID');
+        }
+
+        // Conteo de presentes y ausentes por registro en una sola query
+        $registroIds = $registros->pluck('REGISTRO_CLASE_ID')->toArray();
+        $conteoAsistencias = collect();
+        if (!empty($registroIds)) {
+            $conteoAsistencias = DB::table('alumnos_asistencias')
+                ->whereIn('Id_Registro_Clase', $registroIds)
+                ->whereIn('Id_Estado', [1, 2])
+                ->selectRaw('Id_Registro_Clase, Id_Estado, COUNT(*) as total')
+                ->groupBy('Id_Registro_Clase', 'Id_Estado')
+                ->get()
+                ->groupBy('Id_Registro_Clase');
+        }
+
         $grupos = $this->agruparPor === 'fecha'
             ? $registros->groupBy('REGISTRO_CLASE_FECHA')
             : $registros->groupBy('REGISTRO_CLASE_CURSO');
@@ -84,6 +110,8 @@ class RegistrosClaseTable extends Component
         return view('livewire.registros-clase-table', [
             'grupos'                 => $grupos,
             'registrosConAsistencia' => $registrosConAsistencia,
+            'alumnosPorDictado'      => $alumnosPorDictado,
+            'conteoAsistencias'      => $conteoAsistencias,
             'total'                  => $registros->count(),
         ]);
     }

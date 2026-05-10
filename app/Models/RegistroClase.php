@@ -21,6 +21,8 @@ class RegistroClase extends Model
         'Contenidos_Vistos',
         'Actividades_Desarrolladas',
         'Observaciones',
+        'id_estado_clase',
+        'observacion_estado_clase',
     ];
 
     protected $casts = [

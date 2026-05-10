@@ -158,19 +158,16 @@ class ExportarRegistrosClasesExcel
         $registros = $query->get();
 
         // ── Alumnos del dictado ──
-        // Query directa (sin depender de la view) que replica su lógica:
-        // combina alumnos inscriptos directamente (mxm_alumnos_materias)
-        // y los inscriptos por curso/grupo (mxm_cursos_materias_dictado).
+        // Query directa sobre la tabla alumnos para garantizar que aparezcan
+        // TODOS los inscriptos, incluso los que no tienen nota ni asistencia cargada.
         $alumnos = DB::table('alumnos')
             ->where('alumnos.activo', 1)
             ->where(function ($q) use ($dictado) {
-                // Inscripción directa a la materia
                 $q->whereExists(function ($sub) use ($dictado) {
                     $sub->from('mxm_alumnos_materias')
                         ->whereColumn('mxm_alumnos_materias.id_Alumno', 'alumnos.id')
                         ->where('mxm_alumnos_materias.id_Materia_Dictado', $dictado->DICTADO_ID);
                 })
-                // Inscripción por curso o grupo taller
                 ->orWhereExists(function ($sub) use ($dictado) {
                     $sub->from('mxm_cursos_materias_dictado')
                         ->where('mxm_cursos_materias_dictado.id_materia_dictado', $dictado->DICTADO_ID)

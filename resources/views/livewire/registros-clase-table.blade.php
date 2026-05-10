@@ -52,6 +52,10 @@
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[100px]">Día</th>
           @endif
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[140px]">Horario</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[70px]">Alumnos</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[120px]">Estado</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[55px]">Pres.</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[55px]">Aus.</th>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Contenidos vistos</th>
           <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[110px]"></th>
         </tr>
@@ -61,7 +65,7 @@
 
           {{-- Fila de encabezado de grupo --}}
           <tr wire:key="grupo-{{ $loop->index }}">
-            <td colspan="{{ $agruparPor === 'fecha' ? 5 : 6 }}" class="px-4 py-2 bg-surface2/60 border-b border-t border-dim">
+            <td colspan="{{ $agruparPor === 'fecha' ? 9 : 10 }}" class="px-4 py-2 bg-surface2/60 border-b border-t border-dim">
               <div class="flex items-center gap-2">
                 <span class="text-[10px] text-muted2">▸</span>
                 @if ($agruparPor === 'fecha')
@@ -86,6 +90,11 @@
 
           {{-- Filas de datos del grupo --}}
           @foreach ($filas as $reg)
+            @php
+              $asistReg   = $conteoAsistencias[$reg->REGISTRO_CLASE_ID] ?? collect();
+              $presentes  = $asistReg->firstWhere('Id_Estado', 1)?->total ?? 0;
+              $ausentes   = $asistReg->firstWhere('Id_Estado', 2)?->total ?? 0;
+            @endphp
             <tr
               wire:key="reg-{{ $reg->REGISTRO_CLASE_ID }}"
               @class([
@@ -119,6 +128,28 @@
                 @else
                   —
                 @endif
+              </td>
+
+              <td class="px-4 py-[10px] text-[12px] text-muted font-mono text-center">
+                {{ $alumnosPorDictado[$reg->REGISTRO_CLASE_DICTADO_ID] ?? '—' }}
+              </td>
+
+              <td class="px-4 py-[10px]">
+                @if ($reg->ESTADO_NOMBRE)
+                  <span class="inline-block text-[10.5px] font-mono px-2 py-0.5 rounded bg-accent2/10 text-accent2 border border-accent2/30 whitespace-nowrap">
+                    {{ $reg->ESTADO_NOMBRE }}
+                  </span>
+                @else
+                  <span class="text-[12px] text-muted2">—</span>
+                @endif
+              </td>
+
+              <td class="px-4 py-[10px] text-[12px] font-mono text-center {{ $presentes > 0 ? 'text-success' : 'text-muted2' }}">
+                {{ $presentes > 0 ? $presentes : '—' }}
+              </td>
+
+              <td class="px-4 py-[10px] text-[12px] font-mono text-center {{ $ausentes > 0 ? 'text-danger' : 'text-muted2' }}">
+                {{ $ausentes > 0 ? $ausentes : '—' }}
               </td>
 
               <td class="px-4 py-[10px] text-[12.5px] text-content">

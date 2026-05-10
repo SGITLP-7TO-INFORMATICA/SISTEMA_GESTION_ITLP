@@ -65,11 +65,12 @@
       <div class="bg-surface2 border border-dim rounded-[10px] overflow-hidden">
         <div class="p-6 flex flex-col gap-[14px]">
 
-          {{-- Fila 1: Selección de materia --}}
+          {{-- Fila única: materia + fechas --}}
           <div class="flex items-start gap-3 flex-wrap">
+
             <div class="flex flex-col gap-[5px] [flex:3] min-w-[280px]">
               <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="dictado_id">
-                Materia dictada <span class="text-danger ml-0.5">*</span>
+                Materia dictada
               </label>
               <select
                 id="dictado_id"
@@ -86,17 +87,9 @@
               @error('dictado_id')
                 <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
-              {{-- Aviso: sin materia se descarga ZIP con todas --}}
-              <div id="aviso-zip" class="items-center gap-2 bg-accent/[0.07] border border-accent/25 rounded-lg px-3 py-[9px] text-[12px] text-accent2 mt-1" style="display:none;">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Sin materia seleccionada se descargará un <strong class="font-semibold">archivo ZIP</strong> con los registros de todas tus materias, uno por archivo.
-              </div>
             </div>
-          </div>
 
-          {{-- Fila 2: Rango de fechas --}}
-          <div class="flex items-start gap-3 flex-wrap border-t border-dim pt-[14px]">
-            <div class="flex flex-col gap-[5px] basis-[180px] shrink-0 grow-0">
+            <div class="flex flex-col gap-[5px] basis-[160px] shrink-0 grow-0">
               <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="fecha_desde">Fecha desde</label>
               <input
                 type="date"
@@ -109,7 +102,8 @@
                 <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
             </div>
-            <div class="flex flex-col gap-[5px] basis-[180px] shrink-0 grow-0">
+
+            <div class="flex flex-col gap-[5px] basis-[160px] shrink-0 grow-0">
               <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="fecha_hasta">Fecha hasta</label>
               <input
                 type="date"
@@ -122,11 +116,13 @@
                 <div class="text-[11px] text-danger mt-0.5">{{ $message }}</div>
               @enderror
             </div>
-            <div class="flex flex-col gap-[5px] flex-1 min-w-[160px] justify-end pt-[18px]">
-              <p class="text-[11.5px] text-muted leading-[1.5]">
-                Si no especificás fechas, se exportan <strong class="text-content font-medium">todos los registros</strong> de la materia seleccionada.
-              </p>
-            </div>
+
+          </div>
+
+          {{-- Aviso: sin materia se descarga ZIP --}}
+          <div id="aviso-zip" class="items-center gap-2 bg-accent/[0.07] border border-accent/25 rounded-lg px-3 py-[9px] text-[12px] text-accent2" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Sin materia seleccionada se descargará un <strong class="font-semibold">archivo ZIP</strong> con los registros de todas tus materias, uno por archivo.
           </div>
 
         </div>
