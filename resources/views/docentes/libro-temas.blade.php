@@ -74,6 +74,7 @@
                 data-desde="{{ $d->MODULO_HORARIO_DESDE }}"
                 data-hasta="{{ $d->MODULO_HORARIO_HASTA }}"
                 data-dia="{{ $d->MODULO_DIA }}"
+                data-materia="{{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}"
                 {{ old('dictado_id') == $d->DICTADO_ID ? 'selected' : '' }}
               >
                 {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
@@ -87,12 +88,11 @@
 
         <div class="flex flex-col gap-[5px] shrink-0 grow-0 basis-[80px]">
           <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="numero_clase">
-            Clase N° <span class="text-danger ml-[2px]">*</span>
+            Clase N° <span class="text-[9px] text-muted2 normal-case tracking-normal font-normal">(ref.)</span>
           </label>
-          <input type="number" name="numero_clase" id="numero_clase"
-            placeholder="12" min="1" max="9999" required value="{{ old('numero_clase') }}"
-            class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
-          @error('numero_clase')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
+          <input type="text" id="numero_clase" readonly
+            title="Calculado automáticamente según los registros existentes"
+            class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none opacity-60 cursor-default" />
         </div>
 
         <div class="flex flex-col gap-[5px] shrink-0 grow-0 basis-[80px]">
@@ -178,9 +178,8 @@
           <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="id_estado_clase">Estado de clase</label>
           <select name="id_estado_clase" id="id_estado_clase"
             class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
-            <option value="">— Seleccioná un estado —</option>
             @foreach($estados as $est)
-              <option value="{{ $est->id }}" {{ old('id_estado_clase') == $est->id ? 'selected' : '' }}>
+              <option value="{{ $est->id }}" {{ old('id_estado_clase', 1) == $est->id ? 'selected' : '' }}>
                 {{ $est->nombre }}
               </option>
             @endforeach
@@ -239,6 +238,27 @@
   @livewire('registros-clase-table', ['docenteId' => $docente ? $docente->id : 0])
 
 </form>
+
+{{-- ── MODAL: CLASES FALTANTES ── --}}
+<div id="modal-faltantes" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" style="display:none!important">
+  <div class="bg-surface border border-dim rounded-[14px] w-full max-w-md mx-4 shadow-2xl">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
+      <div>
+        <div class="text-[13.5px] font-semibold text-content">Clases sin registrar</div>
+        <div id="modal-faltantes-materia" class="text-[11.5px] text-muted mt-0.5"></div>
+      </div>
+      <button type="button" onclick="cerrarModalFaltantes()"
+        class="text-muted hover:text-content transition-colors w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/[0.06] cursor-pointer text-[16px] leading-none">✕</button>
+    </div>
+    <div id="modal-faltantes-lista" class="px-5 py-2 flex flex-col max-h-[55vh] overflow-y-auto"></div>
+    <div class="px-5 py-3 border-t border-dim flex justify-end">
+      <button type="button" onclick="cerrarModalFaltantes()"
+        class="px-4 py-2 rounded-lg text-[12.5px] text-muted border border-dim2 hover:border-dim hover:text-content transition-colors cursor-pointer">
+        Ignorar por ahora
+      </button>
+    </div>
+  </div>
+</div>
 
 @endsection
 
@@ -403,6 +423,12 @@
 
     // Verificar que la fecha actual coincide con el módulo (aplica en edición también)
     verificarFechaConModulo();
+
+    // Verificar clases faltantes solo al crear (no al editar)
+    if (!enEdicion && dictadoId) {
+      const materiaNombre = opt.dataset.materia || opt.textContent.trim();
+      verificarClasesFaltantes(dictadoId, materiaNombre);
+    }
   });
 
   // ── Escuchar el evento que dispara el componente Livewire al hacer "editar" ──
@@ -477,6 +503,52 @@
     const sel = document.getElementById('dictado_id');
     if (sel?.value) sel.dispatchEvent(new Event('change'));
   });
+
+  // ── Modal de clases faltantes ──────────────────────────────────────────────
+  async function verificarClasesFaltantes(dictadoId, materiaNombre) {
+    try {
+      const res  = await fetch(`{{ route('docentes.clases-faltantes') }}?dictado_id=${dictadoId}`);
+      const data = await res.json();
+      if (!data.faltantes || data.faltantes.length === 0) return;
+
+      const lista = document.getElementById('modal-faltantes-lista');
+      document.getElementById('modal-faltantes-materia').textContent = materiaNombre;
+      lista.innerHTML = '';
+
+      const diasES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+      data.faltantes.forEach(fechaStr => {
+        const [y, m, d] = fechaStr.split('-');
+        const fechaDisplay = `${d}/${m}/${y}`;
+        const diaNombre = diasES[new Date(fechaStr + 'T12:00:00').getDay()];
+
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-[9px] border-b border-dim last:border-0';
+        row.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-[10.5px] font-mono text-muted2 bg-dim px-1.5 py-0.5 rounded">${diaNombre}</span>
+            <span class="text-[13px] font-mono text-content">${fechaDisplay}</span>
+          </div>
+          <button type="button"
+            onclick="cargarFechaFaltante('${fechaStr}'); cerrarModalFaltantes();"
+            class="text-[11.5px] px-3 py-1.5 rounded-lg bg-accent/[0.08] border border-accent/30 text-accent2 hover:bg-accent/15 transition-colors cursor-pointer">
+            Cargar
+          </button>`;
+        lista.appendChild(row);
+      });
+
+      document.getElementById('modal-faltantes').style.removeProperty('display');
+    } catch (e) { /* silenciar errores de red */ }
+  }
+
+  function cerrarModalFaltantes() {
+    document.getElementById('modal-faltantes').style.setProperty('display', 'none', 'important');
+  }
+
+  function cargarFechaFaltante(fecha) {
+    document.getElementById('fecha').value = fecha;
+    verificarFechaConModulo();
+    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   const lastId = {{ $verRegistroId ?? 'null' }};
   if (lastId) {

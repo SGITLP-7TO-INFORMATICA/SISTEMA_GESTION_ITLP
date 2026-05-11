@@ -9,7 +9,7 @@ use Livewire\Component;
 class RegistrosClaseTable extends Component
 {
     public int    $docenteId;
-    public string $agruparPor = 'fecha';
+    public string $agruparPor = 'curso';
     public ?int   $selectedId = null;
 
     public function mount(int $docenteId): void
@@ -68,7 +68,7 @@ class RegistrosClaseTable extends Component
         $registros = DB::table('view_docentes_registro_clases as v')
             ->leftJoin('docentes_estados_clases as ec', 'ec.id', '=', 'v.REGISTRO_CLASE_ID_ESTADO')
             ->where('v.DOCENTE_A_CARGO_ID', $this->docenteId)
-            ->selectRaw('v.*, ec.nombre as ESTADO_NOMBRE')
+            ->selectRaw('v.*, ec.nombre as ESTADO_NOMBRE, ec.color as ESTADO_COLOR')
             ->orderByDesc('v.REGISTRO_CLASE_FECHA')
             ->get();
 

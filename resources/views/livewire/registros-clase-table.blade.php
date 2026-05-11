@@ -40,12 +40,12 @@
   @if ($total === 0)
     <div class="py-8 text-center text-[13px] text-muted">Todavía no hay clases registradas.</div>
   @else
-    <table class="w-full border-collapse">
+    <table class="w-full border-collapse table-fixed">
       <thead>
         <tr>
           @if ($agruparPor === 'fecha')
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[60px]">N°</th>
-            <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Materia / Curso</th>
+            <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[400px]">Materia / Curso</th>
           @else
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[60px]">N°</th>
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Fecha</th>
@@ -136,7 +136,9 @@
 
               <td class="px-4 py-[10px]">
                 @if ($reg->ESTADO_NOMBRE)
-                  <span class="inline-block text-[10.5px] font-mono px-2 py-0.5 rounded bg-accent2/10 text-accent2 border border-accent2/30 whitespace-nowrap">
+                  @php $c = $reg->ESTADO_COLOR ?? '#7dd3fc'; @endphp
+                  <span class="inline-block text-[10.5px] font-mono px-2 py-0.5 rounded whitespace-nowrap"
+                    style="color:{{ $c }};background:{{ $c }}1a;border:1px solid {{ $c }}4d;">
                     {{ $reg->ESTADO_NOMBRE }}
                   </span>
                 @else

@@ -215,6 +215,8 @@ class DocenteController extends Controller
                 mm.Dia              AS MODULO_DIA,
                 mm.Horario_Desde    AS MODULO_HORARIO_DESDE,
                 mm.Horario_Hasta    AS MODULO_HORARIO_HASTA,
+                md.vigencia_desde   AS VIGENCIA_DESDE,
+                md.vigencia_hasta   AS VIGENCIA_HASTA,
                 CASE WHEN mm.Horario_Desde IS NOT NULL
                      THEN CONCAT(LEFT(mm.Horario_Desde,5), ' – ', LEFT(mm.Horario_Hasta,5))
                      ELSE NULL
@@ -268,7 +270,6 @@ class DocenteController extends Controller
     {
         $request->validate([
             'dictado_id'               => 'required|integer',
-            'numero_clase'             => 'required|integer|min:1|max:9999',
             'fecha'                    => 'required|date',
             'objetivo_clase'           => 'nullable|string|max:500',
             'contenidos_vistos'        => 'nullable|string|max:1000',
@@ -295,11 +296,22 @@ class DocenteController extends Controller
             }
         }
 
+        // Número de clase: calculado automáticamente (no viene del form)
+        if ($request->filled('registro_id')) {
+            $numeroClase = DB::table('docentes_registro_clases')
+                ->where('id', $request->registro_id)
+                ->value('Numero_Clase');
+        } else {
+            $numeroClase = DB::table('docentes_registro_clases')
+                ->where('Id_Dictado_Materia', $request->dictado_id)
+                ->count() + 1;
+        }
+
         $datos = [
             'Id_Dictado_Materia'       => $request->dictado_id,
             'id_Docente_A_Cargo'       => $docente?->id,
             'Fecha_Clase'              => $request->fecha,
-            'Numero_Clase'             => $request->numero_clase,
+            'Numero_Clase'             => $numeroClase,
             'Objetivo_Clase'           => $request->objetivo_clase,
             'Contenidos_Vistos'        => $request->contenidos_vistos,
             'Actividades_Desarrolladas'=> $request->actividades,
@@ -338,6 +350,53 @@ class DocenteController extends Controller
         }
 
         return $redirect;
+    }
+
+    // Devuelve las fechas de clase esperadas que aún no tienen registro.
+    public function clasesFaltantes(Request $request)
+    {
+        $request->validate(['dictado_id' => 'required|integer']);
+
+        $dictado = DB::table('materias_dictado as md')
+            ->join('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
+            ->where('md.id', $request->dictado_id)
+            ->selectRaw('md.vigencia_desde, md.vigencia_hasta, mm.Dia as dia_semana')
+            ->first();
+
+        if (! $dictado || ! $dictado->vigencia_desde || ! $dictado->vigencia_hasta) {
+            return response()->json(['faltantes' => []]);
+        }
+
+        $diasMap  = ['LUNES'=>1,'MARTES'=>2,'MIERCOLES'=>3,'JUEVES'=>4,'VIERNES'=>5,'SABADO'=>6,'DOMINGO'=>7];
+        $diaTarget = $diasMap[strtoupper($dictado->dia_semana)] ?? null;
+        if (! $diaTarget) return response()->json(['faltantes' => []]);
+
+        $desde = \Carbon\Carbon::parse($dictado->vigencia_desde);
+        $hasta = \Carbon\Carbon::parse($dictado->vigencia_hasta)->min(\Carbon\Carbon::today());
+
+        // Si $hasta < $desde no hay nada que verificar
+        if ($hasta->lt($desde)) return response()->json(['faltantes' => []]);
+
+        // Primer cursor: si vigencia_desde ya es el día target, usarla; sino saltar a la siguiente
+        $cursor = ($desde->dayOfWeekIso === $diaTarget)
+            ? $desde->copy()
+            : $desde->copy()->next($diaTarget);
+
+        $esperadas = [];
+        while ($cursor->lte($hasta)) {
+            $esperadas[] = $cursor->toDateString();
+            $cursor->addWeek();
+        }
+
+        $registradas = DB::table('docentes_registro_clases')
+            ->where('Id_Dictado_Materia', $request->dictado_id)
+            ->pluck('Fecha_Clase')
+            ->map(fn($f) => \Carbon\Carbon::parse($f)->toDateString())
+            ->toArray();
+
+        $faltantes = array_values(array_diff($esperadas, $registradas));
+
+        return response()->json(['faltantes' => $faltantes]);
     }
 
     // ──────────────────────────────────────────────
