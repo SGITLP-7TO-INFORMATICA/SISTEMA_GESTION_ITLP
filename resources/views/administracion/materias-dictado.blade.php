@@ -107,6 +107,24 @@
         @error('Anio_Dictado')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
       </div>
 
+      {{-- Vigencia desde --}}
+      <div class="flex flex-col gap-[5px] shrink-0 grow-0 basis-[155px]">
+        <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="vigencia_desde">Vigencia desde <span class="text-danger ml-[2px]">*</span></label>
+        <input type="date" name="vigencia_desde" id="vigencia_desde" required
+          value="{{ old('vigencia_desde') }}"
+          class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+        @error('vigencia_desde')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
+      </div>
+
+      {{-- Vigencia hasta --}}
+      <div class="flex flex-col gap-[5px] shrink-0 grow-0 basis-[155px]">
+        <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="vigencia_hasta">Vigencia hasta <span class="text-danger ml-[2px]">*</span></label>
+        <input type="date" name="vigencia_hasta" id="vigencia_hasta" required
+          value="{{ old('vigencia_hasta') }}"
+          class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+        @error('vigencia_hasta')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
+      </div>
+
     </div>
   </div>
 
@@ -427,6 +445,8 @@
         document.getElementById('id_Materia').value        = d.id_Materia;
         document.getElementById('id_Modulo_Horario').value = d.id_Modulo_Horario;
         document.getElementById('Anio_Dictado').value      = d.Anio_Dictado;
+        document.getElementById('vigencia_desde').value    = d.vigencia_desde || '';
+        document.getElementById('vigencia_hasta').value    = d.vigencia_hasta || '';
 
         // Reset docentes
         document.querySelectorAll('.docente-check').forEach(cb => {

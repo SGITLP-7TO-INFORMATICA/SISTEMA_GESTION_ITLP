@@ -45,6 +45,8 @@ class MateriaDictadoController extends Controller
             'id_Materia'        => 'required|integer|exists:materias,id',
             'id_Modulo_Horario' => 'required|integer|exists:materias_modulos,id',
             'Anio_Dictado'      => 'required|integer|min:2000|max:2100',
+            'vigencia_desde'    => 'required|date',
+            'vigencia_hasta'    => 'required|date|after_or_equal:vigencia_desde',
             'docentes'          => 'required|array|min:1',
             'docentes.*'        => 'integer|exists:docentes,id',
             'cursos'            => 'required|array|min:1',
@@ -63,19 +65,19 @@ class MateriaDictadoController extends Controller
 
         $dictadoId = $request->input('dictado_id');
 
+        $datosDictado = [
+            'id_Materia'        => $request->id_Materia,
+            'id_Modulo_Horario' => $request->id_Modulo_Horario,
+            'Anio_Dictado'      => $request->Anio_Dictado,
+            'vigencia_desde'    => $request->vigencia_desde ?: null,
+            'vigencia_hasta'    => $request->vigencia_hasta ?: null,
+        ];
+
         if ($dictadoId) {
-            DB::table('materias_dictado')->where('id', $dictadoId)->update([
-                'id_Materia'        => $request->id_Materia,
-                'id_Modulo_Horario' => $request->id_Modulo_Horario,
-                'Anio_Dictado'      => $request->Anio_Dictado,
-            ]);
+            DB::table('materias_dictado')->where('id', $dictadoId)->update($datosDictado);
             $msg = 'Dictado actualizado correctamente.';
         } else {
-            $dictadoId = DB::table('materias_dictado')->insertGetId([
-                'id_Materia'        => $request->id_Materia,
-                'id_Modulo_Horario' => $request->id_Modulo_Horario,
-                'Anio_Dictado'      => $request->Anio_Dictado,
-            ]);
+            $dictadoId = DB::table('materias_dictado')->insertGetId($datosDictado);
             $msg = 'Dictado creado correctamente.';
         }
 

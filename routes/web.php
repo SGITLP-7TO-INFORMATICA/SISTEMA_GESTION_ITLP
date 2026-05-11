@@ -69,6 +69,8 @@ Route::middleware('auth')->group(function () {
     // Endpoint AJAX: devuelve el siguiente número de clase para un dictado.
     Route::get('/docentes/siguiente-numero-clase', [DocenteController::class, 'getSiguienteNumeroClase'])
          ->name('docentes.siguiente-numero-clase');
+    Route::get('/docentes/clases-faltantes', [DocenteController::class, 'clasesFaltantes'])
+         ->name('docentes.clases-faltantes');
 
     // Libro de temas (GET muestra el form, POST guarda la entrada)
     Route::get('/docentes/libro-temas', [DocenteController::class, 'libroTemas'])
