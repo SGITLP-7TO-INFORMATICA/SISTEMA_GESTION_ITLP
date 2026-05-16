@@ -29,15 +29,12 @@ class AlumnosTrabajo extends Component
         }
 
         // Alumnos inscriptos en los dictados seleccionados, agrupados por curso
-        $alumnos = DB::table('alumnos as a')
-            ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'a.id')
-            ->join('mxm_cursos_materias_dictado as cmd', 'cmd.id_materia_dictado', '=', 'mxm.id_Materia_Dictado')
-            ->join('alumnos_cursos as c', 'c.id', '=', 'cmd.id_curso')
-            ->whereIn('mxm.id_Materia_Dictado', $this->dictadoIds)
-            ->orderBy('c.nombre')
-            ->orderBy('a.apellido')
-            ->orderBy('a.nombre')
-            ->select('a.id', 'a.nombre', 'a.apellido', 'c.nombre as curso_nombre')
+        $alumnos = DB::table('view_alumnos_por_dictado_con_curso')
+            ->whereIn('id_materia_dictado', $this->dictadoIds)
+            ->orderBy('curso_nombre')
+            ->orderBy('apellido')
+            ->orderBy('nombre')
+            ->select('id_alumno as id', 'nombre', 'apellido', 'curso_nombre')
             ->distinct()
             ->get();
 

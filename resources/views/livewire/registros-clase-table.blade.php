@@ -90,13 +90,9 @@
 
           {{-- Filas de datos del grupo --}}
           @foreach ($filas as $reg)
-            @php
-              $asistReg   = $conteoAsistencias[$reg->REGISTRO_CLASE_ID] ?? collect();
-              $presentes  = $asistReg->firstWhere('Id_Estado', 1)?->total ?? 0;
-              $ausentes   = $asistReg->firstWhere('Id_Estado', 2)?->total ?? 0;
-            @endphp
             <tr
               wire:key="reg-{{ $reg->REGISTRO_CLASE_ID }}"
+              data-registro-id="{{ $reg->REGISTRO_CLASE_ID }}"
               @class([
                 'border-b border-dim last:border-b-0 transition-colors duration-150',
                 'bg-accent/10' => $selectedId === $reg->REGISTRO_CLASE_ID,
@@ -104,25 +100,25 @@
               ])
             >
               @if ($agruparPor === 'fecha')
-                <td class="px-4 py-[10px] text-[12.5px] text-content font-mono">
+                <td class="col-REGISTRO_CLASE_NUMERO px-4 py-[10px] text-[12.5px] text-content font-mono">
                   {{ $reg->REGISTRO_CLASE_NUMERO ?? '—' }}
                 </td>
-                <td class="px-4 py-[10px] text-[12.5px] text-content">
+                <td class="col-REGISTRO_CLASE_CURSO px-4 py-[10px] text-[12.5px] text-content">
                   {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CURSO ?? '—', 60) }}
                 </td>
               @else
-                <td class="px-4 py-[10px] text-[12.5px] text-content font-mono">
+                <td class="col-REGISTRO_CLASE_NUMERO px-4 py-[10px] text-[12.5px] text-content font-mono">
                   {{ $reg->REGISTRO_CLASE_NUMERO ?? '—' }}
                 </td>
-                <td class="px-4 py-[10px] text-[12px] text-muted font-mono whitespace-nowrap">
+                <td class="col-REGISTRO_CLASE_FECHA px-4 py-[10px] text-[12px] text-muted font-mono whitespace-nowrap">
                   {{ \Carbon\Carbon::parse($reg->REGISTRO_CLASE_FECHA)->format('d/m/Y') }}
                 </td>
-                <td class="px-4 py-[10px] text-[12px] text-muted uppercase tracking-[0.06em] whitespace-nowrap">
+                <td class="col-REGISTRO_CLASE_FECHA_DIA px-4 py-[10px] text-[12px] text-muted uppercase tracking-[0.06em] whitespace-nowrap">
                   {{ $reg->REGISTRO_CLASE_FECHA_DIA ?? '—' }}
                 </td>
               @endif
 
-              <td class="px-4 py-[10px] text-[12px] text-muted font-mono whitespace-nowrap">
+              <td class="col-REGISTRO_CLASE_HORA px-4 py-[10px] text-[12px] text-muted font-mono whitespace-nowrap">
                 @if ($reg->REGISTRO_CLASE_HORA_DESDE)
                   {{ substr($reg->REGISTRO_CLASE_HORA_DESDE, 0, 5) }} – {{ substr($reg->REGISTRO_CLASE_HORA_HASTA, 0, 5) }}
                 @else
@@ -130,12 +126,12 @@
                 @endif
               </td>
 
-              <td class="px-4 py-[10px] text-[12px] text-muted font-mono text-center">
-                {{ $alumnosPorDictado[$reg->REGISTRO_CLASE_DICTADO_ID] ?? '—' }}
+              <td class="col-REGISTRO_CLASE_ALUMNOS px-4 py-[10px] text-[12px] text-muted font-mono text-center">
+                {{ $reg->REGISTRO_CLASE_TIENE_ASISTENCIAS ? ($reg->REGISTRO_CLASE_PRESENTES + $reg->REGISTRO_CLASE_AUSENTES) : '—' }}
               </td>
 
-              <td class="px-4 py-[10px]">
-                @if ($reg->ESTADO_NOMBRE)
+              <td class="col-ESTADO_NOMBRE px-4 py-[10px]">
+                @if (!empty($reg->ESTADO_NOMBRE))
                   @php $c = $reg->ESTADO_COLOR ?? '#7dd3fc'; @endphp
                   <span class="inline-block text-[10.5px] font-mono px-2 py-0.5 rounded whitespace-nowrap"
                     style="color:{{ $c }};background:{{ $c }}1a;border:1px solid {{ $c }}4d;">
@@ -146,15 +142,15 @@
                 @endif
               </td>
 
-              <td class="px-4 py-[10px] text-[12px] font-mono text-center {{ $presentes > 0 ? 'text-success' : 'text-muted2' }}">
-                {{ $presentes > 0 ? $presentes : '—' }}
+              <td class="col-REGISTRO_CLASE_PRESENTES px-4 py-[10px] text-[12px] font-mono text-center {{ $reg->REGISTRO_CLASE_PRESENTES > 0 ? 'text-success' : 'text-muted2' }}">
+                {{ $reg->REGISTRO_CLASE_PRESENTES > 0 ? $reg->REGISTRO_CLASE_PRESENTES : '—' }}
               </td>
 
-              <td class="px-4 py-[10px] text-[12px] font-mono text-center {{ $ausentes > 0 ? 'text-danger' : 'text-muted2' }}">
-                {{ $ausentes > 0 ? $ausentes : '—' }}
+              <td class="col-REGISTRO_CLASE_AUSENTES px-4 py-[10px] text-[12px] font-mono text-center {{ $reg->REGISTRO_CLASE_AUSENTES > 0 ? 'text-danger' : 'text-muted2' }}">
+                {{ $reg->REGISTRO_CLASE_AUSENTES > 0 ? $reg->REGISTRO_CLASE_AUSENTES : '—' }}
               </td>
 
-              <td class="px-4 py-[10px] text-[12.5px] text-content">
+              <td class="col-REGISTRO_CLASE_CONTENIDOS px-4 py-[10px] text-[12.5px] text-content">
                 {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CONTENIDOS ?? '—', 90) }}
               </td>
 
@@ -162,7 +158,7 @@
                 <div class="flex items-center justify-end gap-1.5">
 
                   {{-- Ojito: ver asistencias (solo si tiene asistencias cargadas) --}}
-                  @if (in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia))
+                  @if ($reg->REGISTRO_CLASE_TIENE_ASISTENCIAS)
                     <a
                       href="{{ route('docentes.tomar-lista', ['registro_id' => $reg->REGISTRO_CLASE_ID]) }}"
                       title="Ver asistencias"
@@ -175,10 +171,10 @@
                     </a>
                   @endif
 
-                  {{-- Lápiz: editar registro --}}
+                  {{-- Lápiz: editar registro (fetch directo, sin Livewire) --}}
                   <button
                     type="button"
-                    wire:click="cargarRegistro({{ $reg->REGISTRO_CLASE_ID }})"
+                    onclick="window.__editarRegistro({{ $reg->REGISTRO_CLASE_ID }})"
                     title="Editar registro"
                     class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-accent2 border border-accent/30 bg-accent/[0.07] transition-colors duration-150 hover:bg-accent/15 cursor-pointer"
                   >
@@ -189,7 +185,7 @@
                   </button>
 
                   {{-- Tacho: eliminar (solo si NO tiene asistencias) --}}
-                  @if (! in_array($reg->REGISTRO_CLASE_ID, $registrosConAsistencia))
+                  @if (! $reg->REGISTRO_CLASE_TIENE_ASISTENCIAS)
                     <button
                       type="button"
                       wire:click="eliminarRegistro({{ $reg->REGISTRO_CLASE_ID }})"

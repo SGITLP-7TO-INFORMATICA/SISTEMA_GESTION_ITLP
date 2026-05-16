@@ -4,13 +4,14 @@ namespace App\Http\Controllers\DocenteController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Alumno;
-use App\Models\MateriaDictada;
 use App\Models\RegistroClase;
-use App\Models\Asistencia;
-use App\Models\DocenteTrabajo;
-use App\Models\AlumnoNotaTrabajo;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GuardarListaRequest;
+use App\Http\Requests\GuardarLibroTemasRequest;
+use App\Http\Requests\GuardarTrabajoRequest;
+use App\Actions\GuardarListaAsistencia;
+use App\Actions\GuardarRegistroClase;
+use App\Actions\GuardarTrabajo;
 
 class DocenteController extends Controller
 {
@@ -68,12 +69,10 @@ class DocenteController extends Controller
                 ->first();
 
             if ($registroClase) {
-                $dictadoInfo = DB::table('view_docentes_materias_dictadas as v')
-                    ->join('materias_dictado as md', 'md.id', '=', 'v.DICTADO_ID')
-                    ->leftJoin('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
-                    ->where('v.DICTADO_ID', $registroClase->Id_Dictado_Materia)
-                    ->select('v.DICTADO_ID', 'v.MATERIA_NOMBRE', 'v.CURSO_NOMBRE', 'v.CURSO_ID',
-                             'mm.Horario_Desde', 'mm.Horario_Hasta')
+                $dictadoInfo = DB::table('view_docentes_materias_dictadas')
+                    ->where('DICTADO_ID', $registroClase->Id_Dictado_Materia)
+                    ->select('DICTADO_ID', 'MATERIA_NOMBRE', 'CURSO_NOMBRE', 'CURSO_ID',
+                             'MODULO_HORARIO_DESDE as Horario_Desde', 'MODULO_HORARIO_HASTA as Horario_Hasta')
                     ->first();
 
                 $asistenciasExistentes = DB::table('alumnos_asistencias')
@@ -106,15 +105,11 @@ class DocenteController extends Controller
 
         // Trae todos los alumnos del dictado (sin filtrar por curso)
         // y resuelve el nombre del curso/grupo con COALESCE priorizando grupo taller.
-        $alumnos = DB::table('view_alumnos_por_dictado_docente as v')
-            ->join('alumnos as a', 'a.id', '=', 'v.ALUMNO_ID')
-            ->leftJoin('alumnos_cursos as gc', 'gc.id', '=', 'a.id_grupo_taller_actual')
-            ->leftJoin('alumnos_cursos as cc', 'cc.id', '=', 'a.id_curso_actual')
-            ->where('v.DICTADO_ID', $request->dictado_id)
-            ->where('v.USUARIO_ID', auth()->user()?->id)
-            ->orderBy('v.ALUMNO_APELLIDO')
-            ->selectRaw('v.ALUMNO_ID as id, v.ALUMNO_NOMBRE as nombre, v.ALUMNO_APELLIDO as apellido,
-                         COALESCE(gc.nombre, cc.nombre) as curso')
+        $alumnos = DB::table('view_alumnos_por_dictado_docente')
+            ->where('DICTADO_ID', $request->dictado_id)
+            ->where('USUARIO_ID', auth()->user()?->id)
+            ->orderBy('ALUMNO_APELLIDO')
+            ->select('ALUMNO_ID as id', 'ALUMNO_NOMBRE as nombre', 'ALUMNO_APELLIDO as apellido', 'ALUMNO_CURSO_NOMBRE as curso')
             ->distinct()
             ->get();
 
@@ -152,44 +147,17 @@ class DocenteController extends Controller
 
     // Guarda la asistencia.
     // El form envía: asistencia[alumnoId][estado], asistencia[alumnoId][hora_tarde], asistencia[alumnoId][hora_retiro]
-    public function guardarLista(Request $request)
+    public function guardarLista(GuardarListaRequest $request)
     {
-        $request->validate([
-            'registro_clase_id' => 'required|integer',
-            'asistencia'        => 'required|array',
-        ]);
-
         $registro = RegistroClase::find($request->registro_clase_id);
         abort_if(! $registro, 404, 'Registro de clase no encontrado.');
 
-        // El dictado_id viene del hidden input; si no llega, lo resolvemos desde el registro.
         $dictadoId = $request->input('dictado_id') ?: $registro->Id_Dictado_Materia;
-        $dictado = DB::table('view_docentes_materias_dictadas')
-            ->where('DICTADO_ID', $dictadoId)
-            ->first();
-        abort_if(! $dictado, 404, 'Dictado no encontrado.');
+        abort_if(! DB::table('view_docentes_materias_dictadas')->where('DICTADO_ID', $dictadoId)->exists(), 404, 'Dictado no encontrado.');
 
-        // Reemplazar asistencias previas (si las hay) con las nuevas
-        DB::table('alumnos_asistencias')
-            ->where('Id_Registro_Clase', $registro->id)
-            ->delete();
+        (new GuardarListaAsistencia)->execute($registro, $dictadoId, $request->asistencia);
 
-        foreach ($request->asistencia as $alumnoId => $datos) {
-            $estadoId = (int) ($datos['estado'] ?? 2);
-            Asistencia::create([
-                'id_Alumno'              => $alumnoId,
-                'id_materia_dictada'     => $dictado->DICTADO_ID,
-                'Id_Registro_Clase'      => $registro->id,
-                'Fecha'                  => $registro->Fecha_Clase,
-                'Id_Usuario_Verificador' => auth()->id(),
-                'Id_Estado'              => $estadoId,
-                'Hora_Tarde'  => $estadoId === 3 ? ($datos['hora_tarde']  ?? null) : null,
-                'Hora_Retiro' => $estadoId === 5 ? ($datos['hora_retiro'] ?? null) : null,
-            ]);
-        }
-
-        $yaExistian = $request->boolean('ya_existian');
-        $msg = $yaExistian ? 'Asistencia actualizada correctamente.' : 'Lista guardada correctamente.';
+        $msg = $request->boolean('ya_existian') ? 'Asistencia actualizada correctamente.' : 'Lista guardada correctamente.';
 
         return redirect()
             ->route('docentes.libro-temas')
@@ -202,26 +170,24 @@ class DocenteController extends Controller
     // LIBRO DE TEMAS
     // ──────────────────────────────────────────────
 
+    public function getRegistroClaseDatos(int $id)
+    {
+        $reg = DB::table('view_docentes_registro_clases')
+            ->where('REGISTRO_CLASE_ID', $id)
+            ->first();
+
+        return response()->json([
+            'registro'         => $reg,
+            'tieneAsistencias' => (bool) ($reg->REGISTRO_CLASE_TIENE_ASISTENCIAS ?? false),
+        ]);
+    }
+
     public function libroTemas()
     {
         $docente = $this->getDocente();
         // Dictados del docente, incluyendo día y horario del módulo para el blade
-        $dictados = DB::table('view_docentes_materias_dictadas as v')
-            ->join('materias_dictado as md', 'md.id', '=', 'v.DICTADO_ID')
-            ->leftJoin('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
-            ->where('v.DOCENTE_ID', $docente->id)
-            ->selectRaw("
-                v.DICTADO_ID, v.MATERIA_NOMBRE, v.CURSO_NOMBRE, v.CURSO_ID,
-                mm.Dia              AS MODULO_DIA,
-                mm.Horario_Desde    AS MODULO_HORARIO_DESDE,
-                mm.Horario_Hasta    AS MODULO_HORARIO_HASTA,
-                md.vigencia_desde   AS VIGENCIA_DESDE,
-                md.vigencia_hasta   AS VIGENCIA_HASTA,
-                CASE WHEN mm.Horario_Desde IS NOT NULL
-                     THEN CONCAT(LEFT(mm.Horario_Desde,5), ' – ', LEFT(mm.Horario_Hasta,5))
-                     ELSE NULL
-                END AS MODULO_HORARIO_DESDE_HASTA
-            ")
+        $dictados = DB::table('view_docentes_materias_dictadas')
+            ->where('DOCENTE_ID', $docente->id)
             ->get();
 
         // Registros de clases previos del docente
@@ -266,87 +232,23 @@ class DocenteController extends Controller
     }
 
     // Crea o actualiza un registro de clase del libro de temas.
-    public function guardarLibroTemas(Request $request)
+    public function guardarLibroTemas(GuardarLibroTemasRequest $request)
     {
-        $request->validate([
-            'dictado_id'               => 'required|integer',
-            'fecha'                    => 'required|date',
-            'objetivo_clase'           => 'nullable|string|max:500',
-            'contenidos_vistos'        => 'nullable|string|max:1000',
-            'actividades'              => 'nullable|string|max:1000',
-            'observaciones'            => 'nullable|string|max:1000',
-            'observador_clase'         => 'nullable|string|max:255',
-            'id_estado_clase'          => 'nullable|integer|exists:docentes_estados_clases,id',
-            'observacion_estado_clase' => 'nullable|string|max:400',
-        ]);
+        $docente    = $this->getDocente();
+        $registroId = $request->filled('registro_id') ? (int) $request->registro_id : null;
 
-        $docente = $this->getDocente();
+        $result = (new GuardarRegistroClase)->execute($request->validated(), $registroId, $docente->id);
 
-        // Verificar duplicado solo al crear (no al editar)
-        if (! $request->filled('registro_id')) {
-            $yaExiste = DB::table('docentes_registro_clases')
-                ->where('Id_Dictado_Materia', $request->dictado_id)
-                ->where('Fecha_Clase', $request->fecha)
-                ->exists();
-
-            if ($yaExiste) {
-                return back()
-                    ->withInput()
-                    ->withErrors(['fecha' => 'Ya existe un registro de clase para esta materia en la fecha seleccionada.']);
-            }
-        }
-
-        // Número de clase: calculado automáticamente (no viene del form)
-        if ($request->filled('registro_id')) {
-            $numeroClase = DB::table('docentes_registro_clases')
-                ->where('id', $request->registro_id)
-                ->value('Numero_Clase');
-        } else {
-            $numeroClase = DB::table('docentes_registro_clases')
-                ->where('Id_Dictado_Materia', $request->dictado_id)
-                ->count() + 1;
-        }
-
-        $datos = [
-            'Id_Dictado_Materia'       => $request->dictado_id,
-            'id_Docente_A_Cargo'       => $docente?->id,
-            'Fecha_Clase'              => $request->fecha,
-            'Numero_Clase'             => $numeroClase,
-            'Objetivo_Clase'           => $request->objetivo_clase,
-            'Contenidos_Vistos'        => $request->contenidos_vistos,
-            'Actividades_Desarrolladas'=> $request->actividades,
-            'Observaciones'            => $request->observaciones,
-            'id_estado_clase'          => $request->id_estado_clase ?: null,
-            'observacion_estado_clase' => $request->observacion_estado_clase,
-        ];
-
-        if ($request->filled('registro_id')) {
-            // Edición de un registro existente
-            RegistroClase::where('id', $request->registro_id)->update($datos);
-            $registroId = $request->registro_id;
-            $msg = 'Registro de clase actualizado correctamente.';
-        } else {
-            // Nuevo registro
-            $registro = RegistroClase::create($datos);
-            $registroId = $registro->id;
-            $msg = 'Clase registrada en el libro de temas.';
-        }
-
-        // Si el usuario guardó desde el botón "Tomar asistencia", ir directo a tomar lista
         if ($request->boolean('ir_a_lista')) {
             return redirect()
-                ->route('docentes.tomar-lista', ['registro_id' => $registroId])
-                ->with('success', $msg);
+                ->route('docentes.tomar-lista', ['registro_id' => $result['registroId']])
+                ->with('success', $result['msg']);
         }
 
-        // Al editar un registro existente, volver a modo creación (sin pre-seleccionar).
-        // Al crear uno nuevo, entrar en modo edición del registro recién guardado.
-        $redirect = redirect()
-            ->route('docentes.libro-temas')
-            ->with('success', $msg);
+        $redirect = redirect()->route('docentes.libro-temas')->with('success', $result['msg']);
 
-        if (! $request->filled('registro_id')) {
-            $redirect = $redirect->with('last_registro_id', $registroId);
+        if ($registroId === null) {
+            $redirect = $redirect->with('last_registro_id', $result['registroId']);
         }
 
         return $redirect;
@@ -411,81 +313,22 @@ class DocenteController extends Controller
         return view('docentes.trabajos_practicos_abm', compact('dictados', 'docente'));
     }
 
-    public function guardarTrabajo(Request $request)
+    public function guardarTrabajo(GuardarTrabajoRequest $request)
     {
-        $request->validate([
-            'dictados'                    => 'required|array|min:1',
-            'dictados.*'                  => 'integer',
-            'titulo'                      => 'required|string|max:255',
-            'descripcion'                 => 'nullable|string|max:400',
-            'numero_trabajo'              => 'nullable|integer|min:1',
-            'fecha_apertura'              => 'nullable|date',
-            'fecha_cierre'                => 'nullable|date',
-            'enlace'                      => 'nullable|string|max:255|url',
-            'alumnos'                     => 'nullable|array',
-            'alumnos.*.grupo'             => 'nullable|string|max:1',
-            'alumnos.*.nota_individual'   => 'nullable|numeric|min:0|max:10',
-            'alumnos.*.nota_grupal'       => 'nullable|numeric|min:0|max:10',
-            'alumnos.*.observaciones'     => 'nullable|string|max:400',
-        ]);
+        $docente   = $this->getDocente();
+        $trabajoId = $request->filled('trabajo_id') ? (int) $request->trabajo_id : null;
 
-        $docente = $this->getDocente();
-
-        $datos = [
-            'id_docente_creador' => $docente->id,
-            'titulo'             => $request->titulo,
-            'descripcion'        => $request->descripcion,
-            'numero_trabajo'     => $request->numero_trabajo,
-            'fecha_apertura'     => $request->fecha_apertura,
-            'fecha_cierre'       => $request->fecha_cierre,
-            'enlace'             => $request->enlace,
-        ];
-
-        if ($request->filled('trabajo_id')) {
-            $trabajo = DocenteTrabajo::where('id', $request->trabajo_id)
-                ->where('id_docente_creador', $docente->id)
-                ->firstOrFail();
-            $trabajo->update($datos);
-            $msg = 'Trabajo actualizado correctamente.';
-        } else {
-            $trabajo = DocenteTrabajo::create($datos);
-            $msg = 'Trabajo creado correctamente.';
-        }
-
-        // Sincronizar dictados en la tabla pivot
-        DB::table('mxm_docentes_trabajos_dictados')->where('id_trabajo', $trabajo->id)->delete();
-        foreach ($request->dictados as $dictadoId) {
-            DB::table('mxm_docentes_trabajos_dictados')->insert([
-                'id_trabajo' => $trabajo->id,
-                'id_dictado' => $dictadoId,
-            ]);
-        }
-
-        // Sincronizar notas de alumnos
-        if ($request->has('alumnos') && is_array($request->alumnos)) {
-            foreach ($request->alumnos as $alumnoId => $datos) {
-                $asignado = ! empty($datos['asignado']);
-                if ($asignado) {
-                    AlumnoNotaTrabajo::updateOrCreate(
-                        ['id_alumno' => $alumnoId, 'id_trabajo' => $trabajo->id],
-                        [
-                            'nota_individual' => $datos['nota_individual'] ?: null,
-                            'grupo'           => $datos['grupo'] ?: null,
-                            'nota_grupal'     => $datos['nota_grupal'] ?: null,
-                            'observaciones'   => $datos['observaciones'] ?: null,
-                        ]
-                    );
-                } else {
-                    AlumnoNotaTrabajo::where('id_alumno', $alumnoId)
-                        ->where('id_trabajo', $trabajo->id)
-                        ->delete();
-                }
-            }
-        }
+        $result = (new GuardarTrabajo)->execute(
+            $request->validated(),
+            $request->dictados,
+            $request->alumnos ?? [],
+            $docente->id,
+            $trabajoId
+        );
 
         return redirect()
             ->route('docentes.trabajos-practicos')
-            ->with('success', $msg);
+            ->with('success', $result['msg']);
     }
 
     public function eliminarTrabajo(int $id)
@@ -506,12 +349,11 @@ class DocenteController extends Controller
     {
         $request->validate(['dictado_ids' => 'required|array']);
 
-        $alumnos = DB::table('alumnos')
-            ->join('mxm_alumnos_materias as mxm', 'mxm.id_Alumno', '=', 'alumnos.id')
-            ->whereIn('mxm.id_Materia_Dictado', $request->dictado_ids)
-            ->orderBy('alumnos.apellido')
-            ->orderBy('alumnos.nombre')
-            ->select('alumnos.id', 'alumnos.nombre', 'alumnos.apellido', 'alumnos.legajo')
+        $alumnos = DB::table('view_alumnos_por_dictado_con_curso')
+            ->whereIn('id_materia_dictado', $request->dictado_ids)
+            ->orderBy('apellido')
+            ->orderBy('nombre')
+            ->select('id_alumno as id', 'nombre', 'apellido', 'legajo')
             ->distinct()
             ->get();
 

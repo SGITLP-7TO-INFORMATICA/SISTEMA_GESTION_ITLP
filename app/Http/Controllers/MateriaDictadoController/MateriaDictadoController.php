@@ -22,11 +22,10 @@ class MateriaDictadoController extends Controller
             ->orderBy('apellido')->orderBy('nombre')
             ->get(['id', 'nombre', 'apellido']);
 
-        $cursos = DB::table('alumnos_cursos')
-            ->leftJoin('alumnos_anios', 'alumnos_anios.id', '=', 'alumnos_cursos.id_anio')
-            ->select('alumnos_cursos.id', 'alumnos_cursos.nombre', 'alumnos_cursos.grupo_taller', 'alumnos_anios.anio')
-            ->orderBy('alumnos_anios.anio')
-            ->orderBy('alumnos_cursos.nombre')
+        $cursos = DB::table('view_cursos_con_anio_y_conteo')
+            ->select('id', 'nombre', 'grupo_taller', 'anio_num as anio')
+            ->orderBy('anio_num')
+            ->orderBy('nombre')
             ->get();
 
         $roles = DB::table('docentes_roles')->orderBy('id')->get(['id', 'Nombre']);

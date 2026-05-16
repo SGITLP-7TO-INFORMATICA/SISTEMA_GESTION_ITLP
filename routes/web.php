@@ -72,6 +72,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/docentes/clases-faltantes', [DocenteController::class, 'clasesFaltantes'])
          ->name('docentes.clases-faltantes');
 
+    Route::get('/docentes/registro-clase/{id}', [DocenteController::class, 'getRegistroClaseDatos'])
+         ->name('docentes.registro-clase.datos');
+
     // Libro de temas (GET muestra el form, POST guarda la entrada)
     Route::get('/docentes/libro-temas', [DocenteController::class, 'libroTemas'])
          ->name('docentes.libro-temas');

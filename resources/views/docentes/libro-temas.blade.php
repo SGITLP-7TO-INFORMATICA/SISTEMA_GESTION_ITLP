@@ -431,7 +431,32 @@
     }
   });
 
-  // ── Escuchar el evento que dispara el componente Livewire al hacer "editar" ──
+  // ── Editar registro sin tocar Livewire (fetch directo, sin re-render de tabla) ──
+  const __registroBaseUrl = '{{ url("docentes/registro-clase") }}';
+
+  window.__editarRegistro = async function(id) {
+    try {
+      const res  = await fetch(__registroBaseUrl + '/' + id);
+      const data = await res.json();
+      highlightRegistroRow(id);
+      window.dispatchEvent(new CustomEvent('cargar-registro', { detail: data }));
+    } catch (e) {
+      console.error('Error al cargar registro:', e);
+    }
+  };
+
+  function highlightRegistroRow(id) {
+    document.querySelectorAll('[data-registro-id]').forEach(function(tr) {
+      tr.classList.remove('bg-accent/10');
+    });
+    if (id != null) {
+      document.querySelectorAll('[data-registro-id="' + id + '"]').forEach(function(tr) {
+        tr.classList.add('bg-accent/10');
+      });
+    }
+  }
+
+  // ── Escuchar el evento cargar-registro (desde fetch JS) ──
   window.addEventListener('cargar-registro', (e) => {
     const d = e.detail.registro;
     const tieneAsistencias = e.detail.tieneAsistencias;
@@ -460,10 +485,11 @@
     document.getElementById('observacion_estado_clase').value = d.REGISTRO_CLASE_OBSERVACION_ESTADO_CLASE ?? '';
 
     // Limpiar errores de validación de intentos anteriores
-    document.querySelectorAll('#main-form .text-danger:not(span)').forEach(el => el.remove());
+    document.querySelectorAll('#main-form div.text-danger').forEach(el => el.remove());
 
     document.getElementById('banner-edicion').classList.add('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
+    debugger;
     setModoEditar(true);
 
     const urlBase = '{{ route("docentes.tomar-lista") }}';
@@ -489,8 +515,7 @@
     document.getElementById('observacion_estado_clase').value = '';
     moduloDia = '';
     setModoEditar(false);
-
-    Livewire.dispatch('cancelar-seleccion');
+    highlightRegistroRow(null);
 
     document.getElementById('btn-tomar-lista').href = '{{ route("docentes.tomar-lista") }}';
     document.getElementById('btn-tomar-lista-txt').textContent = 'Tomar asistencia';
@@ -552,9 +577,9 @@
 
   const lastId = {{ $verRegistroId ?? 'null' }};
   if (lastId) {
-    // Esperar a que Livewire esté inicializado antes de despachar el evento
+    // Usar el mismo fetch JS, sin tocar Livewire
     document.addEventListener('livewire:initialized', () => {
-      Livewire.dispatch('seleccionar-registro', { id: lastId });
+      window.__editarRegistro(lastId);
     });
   }
 </script>
