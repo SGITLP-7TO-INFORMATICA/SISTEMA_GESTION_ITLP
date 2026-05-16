@@ -11,28 +11,9 @@ class CursoController extends Controller
     // ── GET /administracion/cursos ────────────────────────────────────────────
     public function index()
     {
-        $cursos = DB::table('alumnos_cursos')
-            ->leftJoin('alumnos_anios', 'alumnos_anios.id', '=', 'alumnos_cursos.id_anio')
-            ->leftJoin(DB::raw('(
-                SELECT id_curso_actual as curso_id, COUNT(*) as total
-                FROM alumnos
-                WHERE id_curso_actual IS NOT NULL
-                GROUP BY id_curso_actual
-            ) as conteo_curso'), 'conteo_curso.curso_id', '=', 'alumnos_cursos.id')
-            ->leftJoin(DB::raw('(
-                SELECT id_grupo_taller_actual as curso_id, COUNT(*) as total
-                FROM alumnos
-                WHERE id_grupo_taller_actual IS NOT NULL
-                GROUP BY id_grupo_taller_actual
-            ) as conteo_taller'), 'conteo_taller.curso_id', '=', 'alumnos_cursos.id')
-            ->select(
-                'alumnos_cursos.*',
-                'alumnos_anios.anio as anio_num',
-                'alumnos_anios.nombre as anio_nombre',
-                DB::raw('COALESCE(conteo_curso.total, 0) + COALESCE(conteo_taller.total, 0) as total_alumnos')
-            )
-            ->orderBy('alumnos_anios.anio')
-            ->orderBy('alumnos_cursos.nombre')
+        $cursos = DB::table('view_cursos_con_anio_y_conteo')
+            ->orderBy('anio_num')
+            ->orderBy('nombre')
             ->get();
 
         $anios = DB::table('alumnos_anios')->orderBy('anio')->get(['id', 'anio', 'nombre']);

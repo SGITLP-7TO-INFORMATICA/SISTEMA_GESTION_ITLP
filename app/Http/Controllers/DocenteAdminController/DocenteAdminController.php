@@ -62,16 +62,14 @@ class DocenteAdminController extends Controller
     {
         $docenteId = (int) $request->input('docente_id');
 
-        $materias = DB::table('view_docentes_materias_dictadas as v')
-            ->join('materias_dictado as md', 'md.id', '=', 'v.DICTADO_ID')
-            ->leftJoin('materias_modulos as mm', 'mm.id', '=', 'md.id_Modulo_Horario')
-            ->where('v.DOCENTE_ID', $docenteId)
+        $materias = DB::table('view_docentes_materias_dictadas')
+            ->where('DOCENTE_ID', $docenteId)
             ->select(
-                'v.MATERIA_NOMBRE as materia',
-                'v.CURSO_NOMBRE as curso',
-                'mm.Dia as dia',
-                'mm.Horario_Desde as desde',
-                'mm.Horario_Hasta as hasta'
+                'MATERIA_NOMBRE as materia',
+                'CURSO_NOMBRE as curso',
+                'MODULO_DIA as dia',
+                'MODULO_HORARIO_DESDE as desde',
+                'MODULO_HORARIO_HASTA as hasta'
             )
             ->get();
 

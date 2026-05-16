@@ -26,15 +26,8 @@ class AlumnosTable extends Component
 
     public function cargarAlumno(int $id): void
     {
-        $alumno = DB::table('alumnos')
-            ->leftJoin('alumnos_cursos as curso', 'curso.id', '=', 'alumnos.id_curso_actual')
-            ->leftJoin('alumnos_cursos as taller', 'taller.id', '=', 'alumnos.id_grupo_taller_actual')
-            ->where('alumnos.id', $id)
-            ->select(
-                'alumnos.*',
-                'curso.nombre as curso_nombre',
-                'taller.nombre as taller_nombre'
-            )
+        $alumno = DB::table('view_alumnos_con_curso')
+            ->where('id', $id)
             ->first();
 
         $this->selectedId = $id;
@@ -49,45 +42,31 @@ class AlumnosTable extends Component
 
     public function render()
     {
-        $query = DB::table('alumnos')
-            ->leftJoin('alumnos_cursos as curso', 'curso.id', '=', 'alumnos.id_curso_actual')
-            ->leftJoin('alumnos_anios as anio_row', 'anio_row.id', '=', 'curso.id_anio')
-            ->select(
-                'alumnos.id',
-                'alumnos.nombre',
-                'alumnos.apellido',
-                'alumnos.legajo',
-                'alumnos.activo',
-                'curso.id as curso_id',
-                'curso.nombre as curso_nombre',
-                'anio_row.id as anio_id',
-                'anio_row.anio as anio_num',
-                'anio_row.modalidad as modalidad'
-            );
+        $query = DB::table('view_alumnos_con_curso');
 
         if ($this->search !== '') {
             $term = '%' . $this->search . '%';
             $query->where(function ($q) use ($term) {
-                $q->where('alumnos.nombre', 'like', $term)
-                  ->orWhere('alumnos.apellido', 'like', $term)
-                  ->orWhere('alumnos.legajo', 'like', $term);
+                $q->where('nombre', 'like', $term)
+                  ->orWhere('apellido', 'like', $term)
+                  ->orWhere('legajo', 'like', $term);
             });
         }
 
         if ($this->filtroCurso !== '') {
-            $query->where('alumnos.id_curso_actual', $this->filtroCurso);
+            $query->where('id_curso_actual', $this->filtroCurso);
         }
 
         if ($this->filtroAnio !== '') {
-            $query->where('anio_row.id', $this->filtroAnio);
+            $query->where('anio_id', $this->filtroAnio);
         }
 
         if ($this->filtroModalidad !== '') {
-            $query->where('anio_row.modalidad', $this->filtroModalidad);
+            $query->where('modalidad', $this->filtroModalidad);
         }
 
         $total   = $query->count();
-        $alumnos = $query->orderBy('alumnos.apellido')->orderBy('alumnos.nombre')
+        $alumnos = $query->orderBy('apellido')->orderBy('nombre')
                          ->paginate($this->porPagina);
 
         $cursos = DB::table('alumnos_cursos')
