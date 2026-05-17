@@ -197,7 +197,7 @@
       </button>
     </div>
 
-    <x-tabla-asistencia />
+    @livewire('tabla-asistencia', ['registroId' => $preseleccionado ? $registroClase->id : null])
   </div>
 
   {{-- ── BARRA DE ESTADO ── --}}
@@ -264,8 +264,8 @@
     const fab = document.getElementById('btn-fab');
     if (fab) fab.style.display = '';
 
-    // Cargar asistencias si ya existen (para pre-llenar)
-    let asistencias = null;
+    // Cargar asistencias si ya existen (para pre-llenar en el componente Livewire)
+    let asistencias = {};
     if (tieneAsistencias) {
       try {
         const res = await fetch(`{{ route('docentes.asistencias-registro') }}?registro_id=${d.registroId}`);
@@ -273,37 +273,13 @@
       } catch (e) { /* silenciar, cargar sin pre-llenado */ }
     }
 
-    // tablaAsistenciaCargar: si hay dictado_id lo usa directamente,
-    // si no, envía "__reg__<id>" y el componente lo convierte a registro_id para el server.
-    const paramCarga = d.dictadoId ? d.dictadoId : ('__reg__' + d.registroId);
-    tablaAsistenciaCargar(paramCarga, d.materia + (d.curso ? ' — ' + d.curso : ''), asistencias);
-  }
-
-  // ─────────────────────────────────────────────
-  // MODO PRE-SELECCIONADO (viene desde libro-temas con ?registro_id)
-  // ─────────────────────────────────────────────
-  @if($preseleccionado)
-    const _dictadoId = {{ $registroClase->Id_Dictado_Materia }};
-    const _cursoId   = {{ $dictadoInfo->CURSO_ID ?? 'null' }};
-    const _titulo    = "{{ addslashes(($dictadoInfo->MATERIA_NOMBRE ?? '') . ' — ' . ($dictadoInfo->CURSO_NOMBRE ?? '')) }}";
-
-    @php
-      $asistJs = isset($asistenciasExistentes) ? $asistenciasExistentes->map(fn($a) => [
-          'estado'      => $a->Id_Estado,
-          'hora_tarde'  => $a->Hora_Tarde,
-          'hora_retiro' => $a->Hora_Retiro,
-      ])->toArray() : [];
-    @endphp
-    const _asistencias = @json($asistJs);
-
-    document.addEventListener('DOMContentLoaded', () => {
-      tablaAsistenciaCargar(
-        _dictadoId,
-        _titulo,
-        Object.keys(_asistencias).length ? _asistencias : null
-      );
+    Livewire.dispatch('cargar-tabla-asistencia', {
+      dictadoId:  d.dictadoId ? parseInt(d.dictadoId) : null,
+      registroId: parseInt(d.registroId),
+      titulo:     d.materia + (d.curso ? ' — ' + d.curso : ''),
+      asistencias,
     });
-  @endif
+  }
 
   // ─────────────────────────────────────────────
   // Marcar todos los alumnos con el mismo estado
@@ -316,6 +292,11 @@
       onEstadoCambio(sel, alumnoId);
     });
   }
+
+  // Re-evaluar FAB tras cada render del componente Livewire
+  document.addEventListener('livewire:updated', () => {
+    if (typeof actualizarEstadoLista === 'function') actualizarEstadoLista();
+  });
 
   // ─────────────────────────────────────────────
   // Habilitar FAB cuando todos los alumnos tienen estado
