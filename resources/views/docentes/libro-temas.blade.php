@@ -489,7 +489,7 @@
 
     document.getElementById('banner-edicion').classList.add('visible');
     document.getElementById('aviso-guardar').classList.remove('visible');
-    debugger;
+    //debugger;
     setModoEditar(true);
 
     const urlBase = '{{ route("docentes.tomar-lista") }}';
