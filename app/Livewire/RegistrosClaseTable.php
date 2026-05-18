@@ -12,6 +12,13 @@ class RegistrosClaseTable extends Component
     public string $agruparPor = 'curso';
     public ?int   $selectedId = null;
 
+    public string $filtroMateria = '';
+    public string $filtroFechaDesde = '';
+    public string $filtroFechaHasta = '';
+    public string $filtroDia     = '';
+    public string $filtroHora    = '';
+    public string $filtroEstado  = '';
+
     public function mount(int $docenteId): void
     {
         $this->docenteId = $docenteId;
@@ -39,6 +46,18 @@ class RegistrosClaseTable extends Component
         $this->cargarRegistro($id);
     }
 
+    public function buscar(): void {}
+
+    public function limpiarFiltros(): void
+    {
+        $this->filtroMateria    = '';
+        $this->filtroFechaDesde = '';
+        $this->filtroFechaHasta = '';
+        $this->filtroDia        = '';
+        $this->filtroHora       = '';
+        $this->filtroEstado     = '';
+    }
+
     public function eliminarRegistro(int $id): void
     {
         // Verificación de seguridad: no eliminar si ya tiene asistencias cargadas
@@ -63,6 +82,12 @@ class RegistrosClaseTable extends Component
     {
         $registros = DB::table('view_docentes_registro_clases')
             ->where('DOCENTE_A_CARGO_ID', $this->docenteId)
+            ->when($this->filtroMateria, fn($q) => $q->where('REGISTRO_CLASE_CURSO', 'like', '%' . $this->filtroMateria . '%'))
+            ->when($this->filtroFechaDesde, fn($q) => $q->where('REGISTRO_CLASE_FECHA', '>=', $this->filtroFechaDesde))
+            ->when($this->filtroFechaHasta, fn($q) => $q->where('REGISTRO_CLASE_FECHA', '<=', $this->filtroFechaHasta))
+            ->when($this->filtroDia,     fn($q) => $q->whereRaw('CONVERT(REGISTRO_CLASE_FECHA_DIA USING utf8mb4) = ?', [$this->filtroDia]))
+            ->when($this->filtroHora,    fn($q) => $q->where('REGISTRO_CLASE_HORA_DESDE', 'like', $this->filtroHora . '%'))
+            ->when($this->filtroEstado,  fn($q) => $q->whereRaw('CONVERT(ESTADO_NOMBRE USING utf8mb4) = ?', [$this->filtroEstado]))
             ->orderByDesc('REGISTRO_CLASE_FECHA')
             ->get();
 
@@ -70,9 +95,14 @@ class RegistrosClaseTable extends Component
             ? $registros->groupBy('REGISTRO_CLASE_FECHA')
             : $registros->groupBy('REGISTRO_CLASE_CURSO');
 
+        $estados   = DB::table('docentes_estados_clases')->orderBy('id')->pluck('nombre');
+        $hayFiltros = $this->filtroMateria || $this->filtroFechaDesde || $this->filtroFechaHasta || $this->filtroDia || $this->filtroHora || $this->filtroEstado;
+
         return view('livewire.registros-clase-table', [
-            'grupos' => $grupos,
-            'total'  => $registros->count(),
+            'grupos'     => $grupos,
+            'total'      => $registros->count(),
+            'estados'    => $estados,
+            'hayFiltros' => $hayFiltros,
         ]);
     }
 }

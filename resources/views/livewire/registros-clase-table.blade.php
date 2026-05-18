@@ -37,6 +37,93 @@
     </div>
   </div>
 
+  {{-- Fila de filtros --}}
+  <div class="flex items-end gap-3 flex-wrap px-4 py-3 border-b border-dim bg-surface">
+    <div class="flex flex-col gap-[4px] flex-1 min-w-[150px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Materia / Curso</label>
+      <input
+        type="text"
+        wire:model="filtroMateria"
+        placeholder="Buscar…"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      />
+    </div>
+    <div class="flex flex-col gap-[4px] shrink-0 grow-0 basis-[130px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Fecha desde</label>
+      <input
+        type="date"
+        wire:model="filtroFechaDesde"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      />
+    </div>
+    <div class="flex flex-col gap-[4px] shrink-0 grow-0 basis-[130px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Fecha hasta</label>
+      <input
+        type="date"
+        wire:model="filtroFechaHasta"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      />
+    </div>
+    <div class="flex flex-col gap-[4px] shrink-0 grow-0 basis-[120px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Día</label>
+      <select
+        wire:model="filtroDia"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      >
+        <option value="">Todos</option>
+        <option value="LUNES">Lunes</option>
+        <option value="MARTES">Martes</option>
+        <option value="MIERCOLES">Miércoles</option>
+        <option value="JUEVES">Jueves</option>
+        <option value="VIERNES">Viernes</option>
+        <option value="SABADO">Sábado</option>
+        <option value="DOMINGO">Domingo</option>
+      </select>
+    </div>
+    <div class="flex flex-col gap-[4px] shrink-0 grow-0 basis-[110px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Hora inicio</label>
+      <input
+        type="time"
+        wire:model="filtroHora"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      />
+    </div>
+    <div class="flex flex-col gap-[4px] shrink-0 grow-0 basis-[140px]">
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Estado</label>
+      <select
+        wire:model="filtroEstado"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-2.5 py-[6px] outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+      >
+        <option value="">Todos</option>
+        @foreach ($estados as $est)
+          <option value="{{ $est }}">{{ $est }}</option>
+        @endforeach
+      </select>
+    </div>
+    <div class="flex items-center gap-2 ml-auto shrink-0">
+      <button
+        type="button"
+        wire:click="limpiarFiltros"
+        class="inline-flex items-center gap-1.5 px-3 py-[6px] rounded-lg text-[11.5px] text-muted border border-dim2 bg-transparent hover:text-content hover:border-dim transition-colors duration-150 cursor-pointer"
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Limpiar
+      </button>
+      <button
+        type="button"
+        wire:click="buscar"
+        class="inline-flex items-center gap-1.5 px-4 py-[6px] rounded-lg text-[11.5px] font-medium text-accent2 border border-accent/40 bg-accent/[0.08] hover:bg-accent/15 transition-colors duration-150 cursor-pointer"
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Buscar
+      </button>
+    </div>
+  </div>
+
   @if ($total === 0)
     <div class="py-8 text-center text-[13px] text-muted">Todavía no hay clases registradas.</div>
   @else

@@ -44,7 +44,7 @@
   @if ($total === 0)
     <div class="py-10 text-center text-[13px] text-muted">No se encontraron alumnos.</div>
   @else
-    <div class="overflow-x-auto max-h-[60vh] overflow-scroll">
+    <div class="overflow-x-auto max-h-[40vh] overflow-scroll">
       <table class="w-full border-collapse">
         <thead>
           <tr>
