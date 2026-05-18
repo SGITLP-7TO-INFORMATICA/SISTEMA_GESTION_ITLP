@@ -684,18 +684,28 @@
           nodo.classList.remove('expandido');
         });
 
-        // Marcar alumnos individuales (fuente de verdad)
         const alumnoIds = data.alumnoIds || [];
-        alumnoIds.forEach(aId => {
-          const cb = document.getElementById('al-cb-' + aId);
-          if (cb) cb.checked = true;
-        });
+        const cursoIds  = data.cursos    || [];
 
-        // Actualizar tri-states de todos los cursos
+        if (alumnoIds.length > 0) {
+          // Fuente de verdad: marcar solo los alumnos individuales
+          alumnoIds.forEach(aId => {
+            const cb = document.getElementById('al-cb-' + aId);
+            if (cb) cb.checked = true;
+          });
+        } else if (cursoIds.length > 0) {
+          // Fallback: sin registros individuales, pre-marcar todos los alumnos de los cursos asignados
+          cursoIds.forEach(cId => {
+            document.querySelectorAll(`.alumno-check[data-curso="${cId}"]`).forEach(cb => {
+              cb.checked = true;
+            });
+          });
+        }
+
+        // Actualizar tri-states y expandir cursos con alumnos seleccionados
         document.querySelectorAll('.nodo').forEach(nodo => {
           const cId = parseInt(nodo.id.replace('nodo-', ''));
           updateCursoState(cId);
-          // Expandir si tiene alumnos seleccionados
           const tieneSeleccionados = [...nodo.querySelectorAll('.alumno-check')].some(c => c.checked);
           if (tieneSeleccionados) {
             document.getElementById('hijos-' + cId).style.display = 'block';
