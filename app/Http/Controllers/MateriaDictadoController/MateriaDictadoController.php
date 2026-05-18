@@ -22,18 +22,31 @@ class MateriaDictadoController extends Controller
             ->orderBy('apellido')->orderBy('nombre')
             ->get(['id', 'nombre', 'apellido']);
 
-        $cursos = DB::table('view_cursos_con_anio_y_conteo')
-            ->select('id', 'nombre', 'grupo_taller', 'anio_num as anio')
-            ->orderBy('anio_num')
-            ->orderBy('nombre')
-            ->get();
-
         $roles = DB::table('docentes_roles')->orderBy('id')->get(['id', 'Nombre']);
+
+        // Todos los alumnos activos, para distribuirlos en el árbol
+        $alumnos = DB::table('alumnos')
+            ->where('activo', 1)
+            ->orderBy('apellido')->orderBy('nombre')
+            ->get(['id', 'nombre', 'apellido', 'id_curso_actual', 'id_grupo_taller_actual']);
+
+        // Cursos con sus alumnos anidados (para el árbol)
+        $cursosConAlumnos = DB::table('view_cursos_con_anio_y_conteo')
+            ->select('id', 'nombre', 'grupo_taller', 'anio_num as anio')
+            ->orderBy('anio_num')->orderBy('nombre')
+            ->get()
+            ->map(function ($curso) use ($alumnos) {
+                $curso->alumnos = $alumnos->filter(
+                    fn($a) => $a->id_curso_actual == $curso->id
+                           || $a->id_grupo_taller_actual == $curso->id
+                )->values();
+                return $curso;
+            });
 
         $dictados = $this->getDictadosAgrupados();
 
         return view('administracion.materias-dictado', compact(
-            'materias', 'modulos', 'docentes', 'cursos', 'roles', 'dictados'
+            'materias', 'modulos', 'docentes', 'roles', 'cursosConAlumnos', 'dictados'
         ));
     }
 
@@ -48,8 +61,10 @@ class MateriaDictadoController extends Controller
             'vigencia_hasta'    => 'required|date|after_or_equal:vigencia_desde',
             'docentes'          => 'required|array|min:1',
             'docentes.*'        => 'integer|exists:docentes,id',
-            'cursos'            => 'required|array|min:1',
+            'cursos'            => 'nullable|array',
             'cursos.*'          => 'integer|exists:alumnos_cursos,id',
+            'alumnos'           => 'nullable|array',
+            'alumnos.*'         => 'integer|exists:alumnos,id',
         ]);
 
         $docenteIds = $request->input('docentes', []);
@@ -90,17 +105,21 @@ class MateriaDictadoController extends Controller
             ]);
         }
 
-        // Re-sync cursos
+        // Re-sync cursos (referencia para agrupamiento)
         DB::table('mxm_cursos_materias_dictado')->where('id_materia_dictado', $dictadoId)->delete();
-        $cursoIds   = $request->input('cursos', []);
-        $fechaDesde = $request->input('fecha_desde', []);
-        $fechaHasta = $request->input('fecha_hasta', []);
-        foreach ($cursoIds as $cId) {
+        foreach ($request->input('cursos', []) as $cId) {
             DB::table('mxm_cursos_materias_dictado')->insert([
                 'id_curso'           => $cId,
                 'id_materia_dictado' => $dictadoId,
-                'fecha_desde'        => $fechaDesde[$cId] ?: null,
-                'fecha_hasta'        => $fechaHasta[$cId] ?: null,
+            ]);
+        }
+
+        // Re-sync alumnos individuales (fuente de verdad para la asistencia)
+        DB::table('mxm_alumnos_materias')->where('id_Materia_Dictado', $dictadoId)->delete();
+        foreach (array_unique($request->input('alumnos', [])) as $aId) {
+            DB::table('mxm_alumnos_materias')->insert([
+                'id_Alumno'          => $aId,
+                'id_Materia_Dictado' => $dictadoId,
             ]);
         }
 
@@ -112,6 +131,7 @@ class MateriaDictadoController extends Controller
     {
         DB::table('mxm_docente_materia_dictada')->where('id_Materia_Dictado', $id)->delete();
         DB::table('mxm_cursos_materias_dictado')->where('id_materia_dictado', $id)->delete();
+        DB::table('mxm_alumnos_materias')->where('id_Materia_Dictado', $id)->delete();
         DB::table('materias_dictado')->where('id', $id)->delete();
 
         return redirect()->route('administracion.materias-dictado')
@@ -129,12 +149,17 @@ class MateriaDictadoController extends Controller
 
         $cursos = DB::table('mxm_cursos_materias_dictado')
             ->where('id_materia_dictado', $id)
-            ->get(['id_curso', 'fecha_desde', 'fecha_hasta']);
+            ->pluck('id_curso');
+
+        $alumnoIds = DB::table('mxm_alumnos_materias')
+            ->where('id_Materia_Dictado', $id)
+            ->pluck('id_Alumno');
 
         return response()->json([
-            'dictado'  => $dictado,
-            'docentes' => $docentes,
-            'cursos'   => $cursos,
+            'dictado'   => $dictado,
+            'docentes'  => $docentes,
+            'cursos'    => $cursos,
+            'alumnoIds' => $alumnoIds,
         ]);
     }
 
