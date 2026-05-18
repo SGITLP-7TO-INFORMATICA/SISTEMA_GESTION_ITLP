@@ -353,7 +353,7 @@
     <div class="flex items-center gap-2 flex-wrap ">
       <div class="relative">
         <svg class="absolute left-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="fd-filtro-materia" placeholder="Materia…" oninput="filtrarDictados()"
+        <input type="text" id="fd-filtro-materia" placeholder="Materia…" oninput="filtrarDictados()" autocomplete="new-text"
           class="bg-surface border border-dim2 rounded-lg text-content font-sans text-[12px] pl-6 pr-3 py-[5px] outline-none w-[150px] transition-[border-color] duration-200 focus:border-accent" />
       </div>
       <select id="fd-filtro-anio" onchange="filtrarDictados()"
@@ -430,10 +430,10 @@
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                     </svg>
                   </button>
-                  <form method="POST" action="{{ route('administracion.materias-dictado.eliminar', $dictado->id) }}"
-                    onsubmit="return confirm('¿Eliminar este dictado? Se quitarán todas las asignaciones.')">
+                  <form id="del-dictado-{{ $dictado->id }}" method="POST" action="{{ route('administracion.materias-dictado.eliminar', $dictado->id) }}">
                     @csrf @method('DELETE')
-                    <button type="submit" title="Eliminar dictado"
+                    <button type="button" title="Eliminar dictado"
+                      onclick="if(confirm('¿Eliminar este dictado? Se quitarán todas las asignaciones.')) document.getElementById('del-dictado-{{ $dictado->id }}').submit()"
                       class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-danger border border-danger/30 bg-danger/[0.07] transition-colors duration-150 hover:bg-danger/15 cursor-pointer">
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="3 6 5 6 21 6"/>

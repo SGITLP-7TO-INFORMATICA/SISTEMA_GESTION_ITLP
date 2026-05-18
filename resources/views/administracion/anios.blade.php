@@ -187,11 +187,11 @@
                 </button>
 
                 {{-- Eliminar --}}
-                <form method="POST" action="{{ route('administracion.anios.eliminar', $a->id) }}"
-                  onsubmit="return confirm('¿Eliminar el año «{{ addslashes($a->nombre) }}»? Esta acción no se puede deshacer.')">
+                <form id="del-anio-{{ $a->id }}" method="POST" action="{{ route('administracion.anios.eliminar', $a->id) }}">
                   @csrf
                   @method('DELETE')
-                  <button type="submit" title="Eliminar año"
+                  <button type="button" title="Eliminar año"
+                    onclick="if(confirm('¿Eliminar el año «{{ addslashes($a->nombre) }}»? Esta acción no se puede deshacer.')) document.getElementById('del-anio-{{ $a->id }}').submit()"
                     class="inline-flex items-center justify-center w-[30px] h-[30px] rounded-[7px] text-danger border border-danger/30 bg-danger/[0.07] transition-colors duration-150 hover:bg-danger/15 cursor-pointer">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                       <polyline points="3 6 5 6 21 6"/>
