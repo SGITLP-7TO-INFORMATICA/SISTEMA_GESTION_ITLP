@@ -282,6 +282,21 @@
   }
 
   // ─────────────────────────────────────────────
+  // Aplicar clase CSS + mostrar/ocultar hora según estado
+  // ─────────────────────────────────────────────
+  function onEstadoCambio(sel, alumnoId) {
+    const clases = { '1': 's-presente', '2': 's-ausente', '3': 's-tarde', '4': 's-justif', '5': 's-retiro' };
+    sel.className = 'estado-select' + (clases[sel.value] ? ' ' + clases[sel.value] : '');
+
+    const tardeInput  = document.getElementById('hora-tarde-'  + alumnoId);
+    const retiroInput = document.getElementById('hora-retiro-' + alumnoId);
+    if (tardeInput)  tardeInput.style.display  = sel.value === '3' ? '' : 'none';
+    if (retiroInput) retiroInput.style.display = sel.value === '5' ? '' : 'none';
+
+    if (typeof actualizarEstadoLista === 'function') actualizarEstadoLista();
+  }
+
+  // ─────────────────────────────────────────────
   // Marcar todos los alumnos con el mismo estado
   // ─────────────────────────────────────────────
   function marcarTodos(valor) {
