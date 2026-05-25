@@ -4,12 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="icon" type="image/png" href="{{ asset('icons/ITLP_LOGO.png') }}"/>
-  @if(app()->environment('production'))
-    <link rel="stylesheet" href="{{ asset('app.css') }}">
-    <script src="{{ asset('app.js') }}" defer></script>
-  @else
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-  @endif
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <title>@yield('title', 'SGITLP') – Sistema de Gestión</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>

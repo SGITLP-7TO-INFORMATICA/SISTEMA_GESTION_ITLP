@@ -11,6 +11,21 @@ class GuardarTrabajoRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        $alumnos = $this->input('alumnos', []);
+
+        foreach ($alumnos as $id => $alumno) {
+            foreach (['nota_individual', 'nota_grupal'] as $campo) {
+                if (isset($alumno[$campo]) && $alumno[$campo] !== '') {
+                    $alumnos[$id][$campo] = str_replace(',', '.', $alumno[$campo]);
+                }
+            }
+        }
+
+        $this->merge(['alumnos' => $alumnos]);
+    }
+
     public function rules(): array
     {
         return [

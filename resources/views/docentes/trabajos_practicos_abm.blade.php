@@ -54,7 +54,7 @@
 
   {{-- Box principal: formulario (izq) + tabla de alumnos (der) --}}
   <div class="bg-surface2 border border-dim rounded-[10px] fade-2">
-    <div class="flex gap-0" style="min-height: 480px; max-height: 75vh;">
+    <div class="flex gap-0" style="height: 68vh;">
 
       {{-- COLUMNA IZQUIERDA: formulario --}}
       <div class="flex flex-col gap-[14px] p-6 border-r border-dim overflow-y-auto" style="flex: 0 0 400px; min-width: 320px;">
@@ -99,23 +99,46 @@
           @if ($dictados->isEmpty())
             <p class="text-[12px] text-muted">No tenés dictados asignados.</p>
           @else
-            <div class="flex flex-col gap-[6px]" id="dictados-container">
+            {{-- Checkboxes ocultos — fuente de verdad para el submit --}}
+            <div id="dictados-container" class="hidden">
               @foreach ($dictados as $d)
-                <label class="flex items-center gap-2.5 cursor-pointer select-none group">
-                  <input
-                    type="checkbox"
-                    name="dictados[]"
-                    value="{{ $d->DICTADO_ID }}"
-                    id="dictado_{{ $d->DICTADO_ID }}"
-                    class="w-[20px] h-[20px] rounded accent-accent cursor-pointer dictado-check"
-                    {{ in_array($d->DICTADO_ID, old('dictados', [])) ? 'checked' : '' }}
-                  />
-                  <span class="text-[12.5px] text-content group-hover:text-accent2 transition-colors duration-150">
-                    {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
-                  </span>
-                </label>
+                <input
+                  type="checkbox"
+                  name="dictados[]"
+                  value="{{ $d->DICTADO_ID }}"
+                  id="dictado_{{ $d->DICTADO_ID }}"
+                  class="dictado-check"
+                  {{ in_array($d->DICTADO_ID, old('dictados', [])) ? 'checked' : '' }}
+                />
               @endforeach
             </div>
+
+            {{-- Selector + botón Agregar --}}
+            <div class="flex gap-2">
+              <div class="relative flex-1 min-w-0">
+                <select id="dictado-selector"
+                  class="w-full appearance-none bg-surface border border-dim2 rounded-lg text-content font-sans text-[12.5px] pl-3 pr-8 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
+                  <option value="">Seleccioná un curso…</option>
+                  @foreach ($dictados as $d)
+                    <option value="{{ $d->DICTADO_ID }}"
+                      data-label="{{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}">
+                      {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
+                    </option>
+                  @endforeach
+                </select>
+                <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </div>
+              <button type="button" onclick="agregarDictado()"
+                class="shrink-0 inline-flex items-center gap-[6px] px-3 py-1 rounded-lg font-sans text-[18px] font-medium cursor-pointer bg-accent/10 text-accent2 border border-accent/25 transition-opacity duration-200 hover:opacity-[0.85] active:scale-[0.98]">
+                +
+              </button>
+            </div>
+
+            {{-- Badges de cursos seleccionados --}}
+            <div id="dictados-badges" class="flex flex-wrap gap-[6px] min-h-[28px]"></div>
+            
           @endif
           @error('dictados')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
         </div>
@@ -156,9 +179,9 @@
     </div>
   </div>
 
-  {{-- ── LISTA DE TRABAJOS GUARDADOS (Livewire) ── --}}
+  {{-- ── LISTA DE TRABAJOS GUARDADOS ── --}}
   <div class="fade-3">
-    @livewire('trabajos-table', ['docenteId' => $docente ? $docente->id : 0])
+    @livewire('trabajos-table', ['docenteId' => $docente ? $docente->id : 0, 'autoCargarId' => session('editar_trabajo_id')])
   </div>
 
 </form>
@@ -218,6 +241,24 @@
 
   // toggleFila sigue siendo JS puro (opera sobre el DOM renderizado por Livewire)
   function toggleFila(checkbox) {
+    if (!checkbox.checked) {
+      const row    = checkbox.closest('.alumno-row');
+      const inputs = [...row.querySelectorAll('input:not([type="checkbox"]), textarea')];
+      const tieneDatos = inputs.some(el => el.value.trim() !== '');
+
+      if (tieneDatos) {
+        const confirmar = confirm(
+          'Este alumno tiene datos cargados (notas u observaciones).\n' +
+          '¿Confirmás que querés desasignarlo? Se borrarán todos sus datos al guardar.'
+        );
+        if (!confirmar) {
+          checkbox.checked = true;
+          return;
+        }
+        // Limpiar inputs de la fila
+        inputs.forEach(el => { el.value = ''; });
+      }
+    }
     checkbox.closest('.alumno-row').classList.toggle('deshabilitado', !checkbox.checked);
   }
 
@@ -229,11 +270,71 @@
     });
   }
 
-  // Escuchar cambios en los checkboxes de dictados (debounce 200ms)
-  document.getElementById('dictados-container')?.addEventListener('change', () => {
-    clearTimeout(recargarTimeout);
-    recargarTimeout = setTimeout(() => recargarAlumnos(), 200);
-  });
+  // ── Badges de dictados ──
+
+  function renderBadge(id, label) {
+    const container = document.getElementById('dictados-badges');
+    if (!container || document.getElementById(`badge-dictado-${id}`)) return;
+
+    const badge = document.createElement('span');
+    badge.id        = `badge-dictado-${id}`;
+    badge.className = `inline-flex items-center gap-[5px] pl-3 pr-2 py-1 rounded-full
+                       bg-accent/[0.08] border border-accent/25
+                       text-[11.5px] text-accent2 font-medium`;
+    badge.innerHTML = `
+      <span>${label}</span>
+      <button type="button" title="Quitar curso"
+        class="inline-flex items-center justify-center w-[20px] h-[20px] rounded-full
+               text-[24px] leading-none text-accent2/60
+               hover:text-danger hover:bg-danger/10 hover:cursor-pointer transition-colors duration-150">
+        ×
+      </button>`;
+
+    badge.querySelector('button').addEventListener('click', () => quitarDictado(id, label));
+    container.appendChild(badge);
+  }
+
+  function agregarDictado() {
+    const select = document.getElementById('dictado-selector');
+    const id     = select.value;
+    if (!id) return;
+
+    const label = select.options[select.selectedIndex].dataset.label;
+
+    // Marcar checkbox oculto
+    const cb = document.getElementById(`dictado_${id}`);
+    if (cb) cb.checked = true;
+
+    renderBadge(id, label);
+    select.value = '';
+    recargarAlumnos();
+  }
+
+  function quitarDictado(id, label) {
+    if (!confirm(
+      `¿Confirmás que querés quitar el curso "${label}"?\n\n` +
+      `Los alumnos de ese curso que tengan datos cargados en este trabajo los perderán al guardar.`
+    )) return;
+
+    // Desmarcar checkbox oculto
+    const cb = document.getElementById(`dictado_${id}`);
+    if (cb) cb.checked = false;
+
+    document.getElementById(`badge-dictado-${id}`)?.remove();
+    recargarAlumnos();
+  }
+
+  function initDictadoBadges() {
+    document.querySelectorAll('.dictado-check:checked').forEach(cb => {
+      const option = document.querySelector(`#dictado-selector option[value="${cb.value}"]`);
+      if (option) renderBadge(cb.value, option.dataset.label);
+    });
+  }
+
+  function limpiarBadges() {
+    const container = document.getElementById('dictados-badges');
+    if (container) container.innerHTML = '';
+  }
 
   // ── Escuchar evento Livewire al hacer "editar" ──
   window.addEventListener('cargar-trabajo', (e) => {
@@ -248,9 +349,14 @@
     document.getElementById('fecha_cierre').value   = t.fecha_cierre   ? t.fecha_cierre.substring(0, 10)   : '';
     document.getElementById('enlace').value         = t.enlace || '';
 
-    // Marcar los checkboxes de dictados correspondientes
+    // Sincronizar checkboxes ocultos y badges
     document.querySelectorAll('.dictado-check').forEach(cb => {
       cb.checked = dictados.includes(parseInt(cb.value));
+    });
+    limpiarBadges();
+    dictados.forEach(id => {
+      const option = document.querySelector(`#dictado-selector option[value="${id}"]`);
+      if (option) renderBadge(id, option.dataset.label);
     });
 
     document.getElementById('banner-edicion').classList.add('visible');
@@ -266,15 +372,16 @@
   function cancelarEdicion() {
     document.getElementById('trabajo_id').value = '';
     document.getElementById('main-form').reset();
+    limpiarBadges();
     document.getElementById('banner-edicion').classList.remove('visible');
     setModoEditar(false);
     Livewire.dispatch('cancelar-seleccion');
-    // Limpiar tabla de alumnos
     Livewire.dispatch('recargar-alumnos', { dictadoIds: [], trabajoId: null });
   }
 
-  // ── Al cargar: si hay dictados pre-seleccionados (old input), cargar alumnos ──
+  // ── Al cargar: inicializar badges (old input tras error de validación) ──
   document.addEventListener('DOMContentLoaded', () => {
+    initDictadoBadges();
     const hayChecked = document.querySelectorAll('.dictado-check:checked').length > 0;
     if (hayChecked) recargarAlumnos();
   });

@@ -29,8 +29,66 @@
     </div>
   </div>
 
+  {{-- Barra de filtros --}}
+  <div class="flex items-center gap-2 px-4 py-2.5 border-b border-dim bg-surface shrink-0 flex-wrap">
+
+    {{-- Búsqueda texto --}}
+    <div class="relative flex-1 min-w-[160px]">
+      <svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" wire:model.live.debounce.300ms="search"
+        placeholder="Buscar por título o descripción…"
+        class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] pl-8 pr-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+    </div>
+
+    {{-- Filtro por curso --}}
+    <div class="relative shrink-0 w-[190px]">
+      <select wire:model.live="filtroCurso"
+        class="w-full appearance-none bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] pl-3 pr-8 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
+        <option value="">Todos los cursos</option>
+        @foreach ($cursosDisponibles as $curso)
+          <option value="{{ $curso }}">{{ $curso }}</option>
+        @endforeach
+      </select>
+      <svg class="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </div>
+
+    {{-- Filtro fecha apertura desde --}}
+    <div class="relative shrink-0">
+      <input type="date" wire:model.live="filtroFechaDesde"
+        title="Apertura desde"
+        class="bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+    </div>
+
+    <span class="text-[11px] text-muted shrink-0">—</span>
+
+    {{-- Filtro fecha apertura hasta --}}
+    <div class="relative shrink-0">
+      <input type="date" wire:model.live="filtroFechaHasta"
+        title="Apertura hasta"
+        class="bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+    </div>
+
+    {{-- Botón limpiar (solo visible si hay filtros activos) --}}
+    @if ($hayFiltros)
+      <button type="button" wire:click="limpiarFiltros"
+        class="shrink-0 inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-[11.5px] font-medium text-muted border border-dim2 bg-transparent hover:text-content hover:border-content/30 transition-colors duration-150 cursor-pointer">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+        Limpiar
+      </button>
+    @endif
+
+  </div>
+
   @if ($total === 0)
-    <div class="py-8 text-center text-[13px] text-muted">Todavía no hay trabajos creados.</div>
+    <div class="py-8 text-center text-[13px] text-muted">
+      {{ $hayFiltros ? 'No hay trabajos que coincidan con los filtros.' : 'Todavía no hay trabajos creados.' }}
+    </div>
 
   @elseif ($agruparPor === 'trabajo')
     {{-- ── MODO: Por trabajo ──

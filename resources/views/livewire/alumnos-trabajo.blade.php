@@ -34,10 +34,59 @@
                 onclick="selectAllAlumnos(this)"
                 class="w-[15px] h-[15px] rounded accent-accent cursor-pointer" />
             </th>
-            <th class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Alumno</th>
-            <th class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[66px]">Grupo</th>
-            <th class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[100px]">Nota indiv.</th>
-            <th class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[100px]">Nota grupal</th>
+
+            {{-- Alumno --}}
+            <th wire:click="sortBy('apellido')"
+                class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left cursor-pointer select-none hover:text-content transition-colors duration-150">
+              <span class="inline-flex items-center gap-1">
+                Alumno
+                @if ($sortCol === 'apellido')
+                  <span class="text-accent">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                @else
+                  <span class="opacity-25">↕</span>
+                @endif
+              </span>
+            </th>
+
+            {{-- Grupo --}}
+            <th wire:click="sortBy('grupo')"
+                class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[66px] cursor-pointer select-none hover:text-content transition-colors duration-150">
+              <span class="inline-flex items-center justify-center gap-1">
+                Grupo
+                @if ($sortCol === 'grupo')
+                  <span class="text-accent">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                @else
+                  <span class="opacity-25">↕</span>
+                @endif
+              </span>
+            </th>
+
+            {{-- Nota individual --}}
+            <th wire:click="sortBy('nota_individual')"
+                class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[100px] cursor-pointer select-none hover:text-content transition-colors duration-150">
+              <span class="inline-flex items-center justify-center gap-1">
+                Nota indiv.
+                @if ($sortCol === 'nota_individual')
+                  <span class="text-accent">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                @else
+                  <span class="opacity-25">↕</span>
+                @endif
+              </span>
+            </th>
+
+            {{-- Nota grupal --}}
+            <th wire:click="sortBy('nota_grupal')"
+                class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[100px] cursor-pointer select-none hover:text-content transition-colors duration-150">
+              <span class="inline-flex items-center justify-center gap-1">
+                Nota grupal
+                @if ($sortCol === 'nota_grupal')
+                  <span class="text-accent">{{ $sortDir === 'asc' ? '↑' : '↓' }}</span>
+                @else
+                  <span class="opacity-25">↕</span>
+                @endif
+              </span>
+            </th>
+
             <th class="p-1 text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Observaciones</th>
           </tr>
         </thead>
@@ -106,14 +155,17 @@
                     class="w-[76px] text-center bg-surface border border-dim2 rounded-lg text-content font-sans text-[12.5px] px-2 py-1.5 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
                 </td>
 
-                {{-- Observaciones --}}
-                <td class="p-1 flex align-items-center">
+                {{-- Observaciones (compacta, se expande al foco) --}}
+                <td class="p-1">
                   <textarea
                     name="alumnos[{{ $a->id }}][observaciones]"
                     maxlength="800"
                     placeholder="—"
-                    rows="4"
-                    class=" w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-1.5 outline-none resize-none leading-snug transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
+                    rows="1"
+                    onfocus="this.style.height='96px'"
+                    onblur="this.style.height='28px'"
+                    style="height:28px; overflow:hidden; transition:height 0.18s ease;"
+                    class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-1.5 outline-none resize-none leading-snug transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]"
                   >{{ $a->observaciones }}</textarea>
                 </td>
 

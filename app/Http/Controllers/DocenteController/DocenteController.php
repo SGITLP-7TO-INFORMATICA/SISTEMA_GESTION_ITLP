@@ -328,7 +328,8 @@ class DocenteController extends Controller
 
         return redirect()
             ->route('docentes.trabajos-practicos')
-            ->with('success', $result['msg']);
+            ->with('success', $result['msg'])
+            ->with('editar_trabajo_id', $result['trabajoId']);
     }
 
     public function eliminarTrabajo(int $id)
