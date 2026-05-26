@@ -54,6 +54,7 @@ class MateriaDictadoController extends Controller
     public function guardar(Request $request)
     {
         $request->validate([
+            'nombre'            => 'required|string|max:255',
             'id_Materia'        => 'required|integer|exists:materias,id',
             'id_Modulo_Horario' => 'required|integer|exists:materias_modulos,id',
             'Anio_Dictado'      => 'required|integer|min:2000|max:2100',
@@ -80,6 +81,7 @@ class MateriaDictadoController extends Controller
         $dictadoId = $request->input('dictado_id');
 
         $datosDictado = [
+            'nombre'            => $request->nombre,
             'id_Materia'        => $request->id_Materia,
             'id_Modulo_Horario' => $request->id_Modulo_Horario,
             'Anio_Dictado'      => $request->Anio_Dictado,
@@ -168,30 +170,30 @@ class MateriaDictadoController extends Controller
     {
         return DB::select("
             SELECT
-                md.id,
-                m.Nombre AS materia,
+                v.DICTADO_ID                                  AS id,
+                md.nombre,
+                v.MATERIA_NOMBRE                              AS materia,
                 md.Anio_Dictado,
-                mm.Dia,
-                TIME_FORMAT(mm.Horario_Desde, '%H:%i') AS hora_desde,
-                TIME_FORMAT(mm.Horario_Hasta, '%H:%i') AS hora_hasta,
+                v.MODULO_DIA                                  AS Dia,
+                TIME_FORMAT(v.MODULO_HORARIO_DESDE, '%H:%i') AS hora_desde,
+                TIME_FORMAT(v.MODULO_HORARIO_HASTA, '%H:%i') AS hora_hasta,
                 GROUP_CONCAT(
                     DISTINCT CONCAT(d.apellido, ', ', d.nombre, ' [', dr.Nombre, ']')
                     ORDER BY dr.id SEPARATOR ' · '
                 ) AS docentes_txt,
                 GROUP_CONCAT(
-                    DISTINCT ac.nombre
-                    ORDER BY ac.nombre SEPARATOR ' · '
+                    DISTINCT v.CURSO_NOMBRE
+                    ORDER BY v.CURSO_NOMBRE SEPARATOR ' · '
                 ) AS cursos_txt
-            FROM materias_dictado md
-            JOIN materias m ON m.id = md.id_Materia
-            JOIN materias_modulos mm ON mm.id = md.id_Modulo_Horario
-            LEFT JOIN mxm_docente_materia_dictada mxmd ON mxmd.id_Materia_Dictado = md.id
+            FROM view_docentes_materias_dictadas_con_cursos v
+            JOIN materias_dictado md ON md.id = v.DICTADO_ID
+            LEFT JOIN mxm_docente_materia_dictada mxmd ON mxmd.id_Materia_Dictado = v.DICTADO_ID
             LEFT JOIN docentes d ON d.id = mxmd.id_Docente
             LEFT JOIN docentes_roles dr ON dr.id = mxmd.id_Docente_Rol
-            LEFT JOIN mxm_cursos_materias_dictado mxmc ON mxmc.id_materia_dictado = md.id
-            LEFT JOIN alumnos_cursos ac ON ac.id = mxmc.id_curso
-            GROUP BY md.id, m.Nombre, md.Anio_Dictado, mm.Dia, mm.Horario_Desde, mm.Horario_Hasta
-            ORDER BY FIELD(mm.Dia,'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES'), mm.Horario_Desde, m.Nombre
+            GROUP BY v.DICTADO_ID, md.nombre, v.MATERIA_NOMBRE, md.Anio_Dictado,
+                     v.MODULO_DIA, v.MODULO_HORARIO_DESDE, v.MODULO_HORARIO_HASTA
+            ORDER BY FIELD(v.MODULO_DIA,'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES'),
+                     v.MODULO_HORARIO_DESDE, v.MATERIA_NOMBRE
         ");
     }
 }

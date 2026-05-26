@@ -154,7 +154,7 @@
       <div class="flex flex-col gap-[3px] px-6 py-[14px] border-r border-dim [flex:3] min-w-[260px]">
         <span class="text-[9.5px] font-bold text-muted2 uppercase tracking-[0.12em]">Clase dictada</span>
         <span class="text-[13px] text-content font-medium" id="info-materia">
-          {{ $preseleccionado ? ($dictadoInfo->MATERIA_NOMBRE . ' — ' . $dictadoInfo->CURSO_NOMBRE) : '' }}
+          {{ $preseleccionado ? $dictadoInfo->DICTADO_NOMBRE : '' }}
         </span>
       </div>
       <div class="flex flex-col gap-[3px] px-6 py-[14px] border-r border-dim flex-1 min-w-[160px]">

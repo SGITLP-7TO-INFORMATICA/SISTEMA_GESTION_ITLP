@@ -31,7 +31,7 @@ class ExportarRegistrosClasesExcel
         }
 
         // ── Con materia seleccionada: uno o varios cursos ──
-        $dictados = DB::table('view_docentes_materias_dictadas')
+        $dictados = DB::table('view_docentes_materias_dictadas_con_cursos')
             ->where('DICTADO_ID', $request->dictado_id)
             ->where('USUARIO_ID', auth()->user()?->id)
             ->get();
@@ -62,7 +62,7 @@ class ExportarRegistrosClasesExcel
     // ──────────────────────────────────────────────────────────────
     private function descargarTodos(?string $fechaDesde, ?string $fechaHasta)
     {
-        $dictados = DB::table('view_docentes_materias_dictadas')
+        $dictados = DB::table('view_docentes_materias_dictadas_con_cursos')
             ->where('USUARIO_ID', auth()->user()?->id)
             ->get();
 

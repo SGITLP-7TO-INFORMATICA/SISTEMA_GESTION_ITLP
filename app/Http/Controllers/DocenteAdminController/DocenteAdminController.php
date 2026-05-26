@@ -65,8 +65,7 @@ class DocenteAdminController extends Controller
         $materias = DB::table('view_docentes_materias_dictadas')
             ->where('DOCENTE_ID', $docenteId)
             ->select(
-                'MATERIA_NOMBRE as materia',
-                'CURSO_NOMBRE as curso',
+                'DICTADO_NOMBRE as materia',
                 'MODULO_DIA as dia',
                 'MODULO_HORARIO_DESDE as desde',
                 'MODULO_HORARIO_HASTA as hasta'

@@ -107,6 +107,18 @@
     </div>
     <div class="p-5 flex items-start gap-4 flex-wrap">
 
+      {{-- Nombre del dictado --}}
+      <div class="flex flex-col gap-[5px] flex-1 min-w-[260px]">
+        <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="nombre">
+          Nombre del dictado <span class="text-danger ml-[2px]">*</span>
+        </label>
+        <input type="text" name="nombre" id="nombre"
+          maxlength="255" placeholder="Ej: Matemáticas — 3°A y 3°B" required
+          value="{{ old('nombre') }}"
+          class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
+        @error('nombre')<div class="text-[11px] text-danger mt-[2px]">{{ $message }}</div>@enderror
+      </div>
+
       {{-- Materia --}}
       <div class="flex flex-col gap-[5px] flex-1 min-w-[220px]">
         <label class="text-[10px] font-bold text-muted uppercase tracking-[0.12em]" for="id_Materia">
@@ -397,8 +409,9 @@
               data-materia="{{ strtolower($dictado->materia) }}"
               data-anio="{{ $dictado->Anio_Dictado }}"
               data-dia="{{ strtolower($dictado->Dia) }}">
-              <td class="px-4 py-[10px] text-[12.5px] font-medium text-content">
-                {{ $dictado->materia }}
+              <td class="px-4 py-[10px]">
+                <div class="text-[12.5px] font-medium text-content">{{ $dictado->nombre }}</div>
+                <div class="text-[11px] text-muted mt-0.5">{{ $dictado->materia }}</div>
               </td>
               <td class="px-4 py-[10px] text-[12px] text-muted">
                 {{ $dictado->docentes_txt ?: '—' }}
@@ -643,6 +656,7 @@
         const d = data.dictado;
 
         document.getElementById('dictado_id').value        = d.id;
+        document.getElementById('nombre').value            = d.nombre || '';
         document.getElementById('id_Materia').value        = d.id_Materia;
         document.getElementById('id_Modulo_Horario').value = d.id_Modulo_Horario;
         document.getElementById('Anio_Dictado').value      = d.Anio_Dictado;
@@ -758,20 +772,21 @@
 
   // ── Confirmar submit ─────────────────────────────────────────────────────────
   document.getElementById('main-form').addEventListener('submit', function (e) {
-    const enEdicion = document.getElementById('dictado_id').value !== '';
+    e.preventDefault();
 
     if (document.querySelectorAll('.docente-check:checked').length === 0) {
-      e.preventDefault(); alert('Seleccioná al menos un docente.'); return;
+      alert('Seleccioná al menos un docente.'); return;
     }
 
     const titulares = [...document.querySelectorAll('.docente-check:checked')]
       .filter(cb => document.getElementById('rol-' + cb.value)?.value == '1').length;
     if (titulares !== 1) {
-      e.preventDefault(); alert('Debe haber exactamente un docente Titular.'); return;
+      alert('Debe haber exactamente un docente Titular.'); return;
     }
 
+    const enEdicion = document.getElementById('dictado_id').value !== '';
     const msg = enEdicion ? '¿Confirmar los cambios sobre este dictado?' : '¿Guardar este nuevo dictado?';
-    if (!confirm(msg)) e.preventDefault();
+    if (confirm(msg)) this.submit();
   });
 
   // ── Inicialización ───────────────────────────────────────────────────────────

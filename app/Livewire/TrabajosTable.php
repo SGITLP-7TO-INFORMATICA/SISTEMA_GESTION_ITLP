@@ -65,8 +65,8 @@ class TrabajosTable extends Component
             ->join('view_docentes_materias_dictadas as v', 'v.DICTADO_ID', '=', 'mx.id_dictado')
             ->where('t.id_docente_creador', $this->docenteId)
             ->distinct()
-            ->orderBy('v.CURSO_NOMBRE')
-            ->pluck('v.CURSO_NOMBRE');
+            ->orderBy('v.DICTADO_NOMBRE')
+            ->pluck('v.DICTADO_NOMBRE');
 
         $hayFiltros = $this->search !== '' || $this->filtroCurso !== ''
                    || $this->filtroFechaDesde !== '' || $this->filtroFechaHasta !== '';
@@ -79,20 +79,19 @@ class TrabajosTable extends Component
                 ->when($this->search, fn ($q) => $q->where(fn ($q2) => $q2
                     ->where('t.titulo', 'like', '%'.$this->search.'%')
                     ->orWhere('t.descripcion', 'like', '%'.$this->search.'%')))
-                ->when($this->filtroCurso, fn ($q) => $q->where('v.CURSO_NOMBRE', $this->filtroCurso))
+                ->when($this->filtroCurso, fn ($q) => $q->where('v.DICTADO_NOMBRE', $this->filtroCurso))
                 ->when($this->filtroFechaDesde, fn ($q) => $q->where('t.fecha_apertura', '>=', $this->filtroFechaDesde))
                 ->when($this->filtroFechaHasta, fn ($q) => $q->where('t.fecha_apertura', '<=', $this->filtroFechaHasta))
                 ->select(
                     't.id', 't.titulo', 't.descripcion', 't.numero_trabajo',
                     't.fecha_apertura', 't.fecha_cierre',
-                    'v.MATERIA_NOMBRE', 'v.CURSO_NOMBRE'
+                    'v.DICTADO_NOMBRE'
                 )
-                ->orderBy('v.MATERIA_NOMBRE')
-                ->orderBy('v.CURSO_NOMBRE')
+                ->orderBy('v.DICTADO_NOMBRE')
                 ->orderByRaw('t.numero_trabajo IS NULL, t.numero_trabajo')
                 ->get();
 
-            $grupos = $rows->groupBy(fn ($r) => $r->MATERIA_NOMBRE . ' — ' . $r->CURSO_NOMBRE);
+            $grupos = $rows->groupBy(fn ($r) => $r->DICTADO_NOMBRE);
             $total  = $rows->pluck('id')->unique()->count();
 
             return view('livewire.trabajos-table', [
@@ -117,7 +116,7 @@ class TrabajosTable extends Component
                 ->from('mxm_docentes_trabajos_dictados as mx2')
                 ->join('view_docentes_materias_dictadas as v2', 'v2.DICTADO_ID', '=', 'mx2.id_dictado')
                 ->whereColumn('mx2.id_trabajo', 't.id')
-                ->where('v2.CURSO_NOMBRE', $this->filtroCurso)))
+                ->where('v2.DICTADO_NOMBRE', $this->filtroCurso)))
             ->when($this->filtroFechaDesde, fn ($q) => $q->where('t.fecha_apertura', '>=', $this->filtroFechaDesde))
             ->when($this->filtroFechaHasta, fn ($q) => $q->where('t.fecha_apertura', '<=', $this->filtroFechaHasta))
             ->orderByRaw('t.numero_trabajo IS NULL, t.numero_trabajo')
@@ -129,7 +128,7 @@ class TrabajosTable extends Component
             $dictadosPorTrabajo[$t->id] = DB::table('mxm_docentes_trabajos_dictados as mx')
                 ->join('view_docentes_materias_dictadas as v', 'v.DICTADO_ID', '=', 'mx.id_dictado')
                 ->where('mx.id_trabajo', $t->id)
-                ->select('v.MATERIA_NOMBRE', 'v.CURSO_NOMBRE')
+                ->select('v.DICTADO_NOMBRE')
                 ->get();
         }
 

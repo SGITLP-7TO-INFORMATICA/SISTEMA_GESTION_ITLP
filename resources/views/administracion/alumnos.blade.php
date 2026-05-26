@@ -223,11 +223,12 @@
 
   // ── Confirmar antes de guardar ──
   document.getElementById('main-form').addEventListener('submit', function (e) {
+    e.preventDefault();
     const enEdicion = document.getElementById('alumno_id').value !== '';
     const msg = enEdicion
       ? '¿Confirmar los cambios sobre este alumno?'
       : '¿Guardar este nuevo alumno?';
-    if (!confirm(msg)) e.preventDefault();
+    if (confirm(msg)) this.submit();
   });
 
   // ── Cargar alumno desde evento Livewire ──
@@ -254,7 +255,7 @@
     cargarMaterias(d.id);
     cargarAsistencias(d.id);
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ── Cancelar edición ──

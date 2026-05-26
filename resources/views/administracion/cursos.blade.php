@@ -241,7 +241,7 @@
     const fila = document.getElementById('fila-' + id);
     if (fila) fila.classList.add('bg-accent/10');
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function cancelarEdicion() {
@@ -254,11 +254,12 @@
   }
 
   document.getElementById('main-form').addEventListener('submit', function (e) {
+    e.preventDefault();
     const enEdicion = document.getElementById('curso_id').value !== '';
     const msg = enEdicion
       ? '¿Confirmar los cambios sobre este curso?'
       : '¿Guardar este nuevo curso?';
-    if (!confirm(msg)) e.preventDefault();
+    if (confirm(msg)) this.submit();
   });
 </script>
 @endpush

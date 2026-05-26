@@ -24,15 +24,15 @@
         Por fecha
       </button>
       <button
-        wire:click="$set('agruparPor', 'curso')"
+        wire:click="$set('agruparPor', 'dictado')"
         type="button"
         @class([
           'px-3 py-1.5 rounded-[7px] text-[11.5px] font-medium transition-colors duration-150 cursor-pointer border',
-          'bg-accent/15 border-accent/40 text-accent2' => $agruparPor === 'curso',
-          'bg-transparent border-dim2 text-muted hover:text-content hover:border-dim2' => $agruparPor !== 'curso',
+          'bg-accent/15 border-accent/40 text-accent2' => $agruparPor === 'dictado',
+          'bg-transparent border-dim2 text-muted hover:text-content hover:border-dim2' => $agruparPor !== 'dictado',
         ])
       >
-        Por curso
+        Por dictado
       </button>
     </div>
   </div>
@@ -40,7 +40,7 @@
   {{-- Fila de filtros --}}
   <div class="flex items-end gap-3 flex-wrap px-4 py-3 border-b border-dim bg-surface">
     <div class="flex flex-col gap-[4px] flex-1 min-w-[150px]">
-      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Materia / Curso</label>
+      <label class="text-[9.5px] font-bold text-muted uppercase tracking-[0.1em]">Dictado</label>
       <input
         type="text"
         wire:model="filtroMateria"
@@ -132,7 +132,7 @@
         <tr>
           @if ($agruparPor === 'fecha')
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[60px]">N°</th>
-            <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[400px]">Materia / Curso</th>
+            <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[400px]">Dictado</th>
           @else
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[60px]">N°</th>
             <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[110px]">Fecha</th>
@@ -190,8 +190,8 @@
                 <td class="col-REGISTRO_CLASE_NUMERO px-4 py-[10px] text-[12.5px] text-content font-mono">
                   {{ $reg->REGISTRO_CLASE_NUMERO ?? '—' }}
                 </td>
-                <td class="col-REGISTRO_CLASE_CURSO px-4 py-[10px] text-[12.5px] text-content">
-                  {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CURSO ?? '—', 60) }}
+                <td class="col-DICTADO_NOMBRE px-4 py-[10px] text-[12.5px] text-content">
+                  {{ \Illuminate\Support\Str::limit($reg->DICTADO_NOMBRE ?? '—', 60) }}
                 </td>
               @else
                 <td class="col-REGISTRO_CLASE_NUMERO px-4 py-[10px] text-[12.5px] text-content font-mono">

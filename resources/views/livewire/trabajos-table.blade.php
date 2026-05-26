@@ -37,14 +37,14 @@
       <svg class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
-      <input type="text" wire:model.live.debounce.300ms="search"
+      <input type="text" wire:model.defer="search" wire:keydown.enter="buscar"
         placeholder="Buscar por título o descripción…"
         class="w-full bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] pl-8 pr-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
     </div>
 
     {{-- Filtro por curso --}}
     <div class="relative shrink-0 w-[190px]">
-      <select wire:model.live="filtroCurso"
+      <select wire:model.defer="filtroCurso"
         class="w-full appearance-none bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] pl-3 pr-8 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
         <option value="">Todos los cursos</option>
         @foreach ($cursosDisponibles as $curso)
@@ -58,7 +58,7 @@
 
     {{-- Filtro fecha apertura desde --}}
     <div class="relative shrink-0">
-      <input type="date" wire:model.live="filtroFechaDesde"
+      <input type="date" wire:model.defer="filtroFechaDesde"
         title="Apertura desde"
         class="bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
     </div>
@@ -67,21 +67,28 @@
 
     {{-- Filtro fecha apertura hasta --}}
     <div class="relative shrink-0">
-      <input type="date" wire:model.live="filtroFechaHasta"
+      <input type="date" wire:model.defer="filtroFechaHasta"
         title="Apertura hasta"
         class="bg-surface2 border border-dim2 rounded-lg text-content font-sans text-[12px] px-3 py-[7px] outline-none transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]" />
     </div>
 
-    {{-- Botón limpiar (solo visible si hay filtros activos) --}}
-    @if ($hayFiltros)
-      <button type="button" wire:click="limpiarFiltros"
-        class="shrink-0 inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-[11.5px] font-medium text-muted border border-dim2 bg-transparent hover:text-content hover:border-content/30 transition-colors duration-150 cursor-pointer">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-        Limpiar
-      </button>
-    @endif
+    {{-- Botón Buscar --}}
+    <button type="button" wire:click="buscar"
+      class="shrink-0 inline-flex items-center gap-1.5 px-4 py-[7px] rounded-lg text-[11.5px] font-medium text-accent2 border border-accent/40 bg-accent/[0.08] hover:bg-accent/15 transition-colors duration-150 cursor-pointer">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      Buscar
+    </button>
+
+    {{-- Botón limpiar --}}
+    <button type="button" wire:click="limpiarFiltros"
+      class="shrink-0 inline-flex items-center gap-1.5 px-3 py-[7px] rounded-lg text-[11.5px] font-medium text-muted border border-dim2 bg-transparent hover:text-content hover:border-content/30 transition-colors duration-150 cursor-pointer">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Limpiar
+    </button>
 
   </div>
 
@@ -164,7 +171,7 @@
                   <div class="flex items-center gap-2">
                     <span class="w-1 h-1 rounded-full bg-muted2 shrink-0"></span>
                     <span class="text-[12px] text-muted">
-                      {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
+                      {{ $d->DICTADO_NOMBRE }}
                     </span>
                   </div>
                 </td>

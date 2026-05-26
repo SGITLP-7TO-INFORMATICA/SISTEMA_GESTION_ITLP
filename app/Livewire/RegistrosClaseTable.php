@@ -9,7 +9,7 @@ use Livewire\Component;
 class RegistrosClaseTable extends Component
 {
     public int    $docenteId;
-    public string $agruparPor = 'curso';
+    public string $agruparPor = 'dictado';
     public ?int   $selectedId = null;
 
     public string $filtroMateria = '';
@@ -80,20 +80,23 @@ class RegistrosClaseTable extends Component
 
     public function render()
     {
-        $registros = DB::table('view_docentes_registro_clases')
-            ->where('DOCENTE_A_CARGO_ID', $this->docenteId)
-            ->when($this->filtroMateria, fn($q) => $q->where('REGISTRO_CLASE_CURSO', 'like', '%' . $this->filtroMateria . '%'))
-            ->when($this->filtroFechaDesde, fn($q) => $q->where('REGISTRO_CLASE_FECHA', '>=', $this->filtroFechaDesde))
-            ->when($this->filtroFechaHasta, fn($q) => $q->where('REGISTRO_CLASE_FECHA', '<=', $this->filtroFechaHasta))
-            ->when($this->filtroDia,     fn($q) => $q->whereRaw('CONVERT(REGISTRO_CLASE_FECHA_DIA USING utf8mb4) = ?', [$this->filtroDia]))
-            ->when($this->filtroHora,    fn($q) => $q->where('REGISTRO_CLASE_HORA_DESDE', 'like', $this->filtroHora . '%'))
-            ->when($this->filtroEstado,  fn($q) => $q->whereRaw('CONVERT(ESTADO_NOMBRE USING utf8mb4) = ?', [$this->filtroEstado]))
-            ->orderByDesc('REGISTRO_CLASE_FECHA')
+        // Join con materias_dictado para obtener el nombre del dictado
+        $registros = DB::table('view_docentes_registro_clases as v')
+            ->join('materias_dictado as md', 'md.id', '=', 'v.REGISTRO_CLASE_DICTADO_ID')
+            ->where('v.DOCENTE_A_CARGO_ID', $this->docenteId)
+            ->when($this->filtroMateria, fn($q) => $q->where('md.nombre', 'like', '%' . $this->filtroMateria . '%'))
+            ->when($this->filtroFechaDesde, fn($q) => $q->where('v.REGISTRO_CLASE_FECHA', '>=', $this->filtroFechaDesde))
+            ->when($this->filtroFechaHasta, fn($q) => $q->where('v.REGISTRO_CLASE_FECHA', '<=', $this->filtroFechaHasta))
+            ->when($this->filtroDia,     fn($q) => $q->whereRaw('CONVERT(v.REGISTRO_CLASE_FECHA_DIA USING utf8mb4) = ?', [$this->filtroDia]))
+            ->when($this->filtroHora,    fn($q) => $q->where('v.REGISTRO_CLASE_HORA_DESDE', 'like', $this->filtroHora . '%'))
+            ->when($this->filtroEstado,  fn($q) => $q->whereRaw('CONVERT(v.ESTADO_NOMBRE USING utf8mb4) = ?', [$this->filtroEstado]))
+            ->select('v.*', 'md.nombre as DICTADO_NOMBRE')
+            ->orderByDesc('v.REGISTRO_CLASE_FECHA')
             ->get();
 
         $grupos = $this->agruparPor === 'fecha'
             ? $registros->groupBy('REGISTRO_CLASE_FECHA')
-            : $registros->groupBy('REGISTRO_CLASE_CURSO');
+            : $registros->groupBy('DICTADO_NOMBRE');
 
         $estados   = DB::table('docentes_estados_clases')->orderBy('id')->pluck('nombre');
         $hayFiltros = $this->filtroMateria || $this->filtroFechaDesde || $this->filtroFechaHasta || $this->filtroDia || $this->filtroHora || $this->filtroEstado;

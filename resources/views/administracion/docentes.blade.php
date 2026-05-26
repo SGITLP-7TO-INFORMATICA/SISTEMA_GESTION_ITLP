@@ -184,11 +184,12 @@
 
   // ── Confirmar antes de guardar ──
   document.getElementById('main-form').addEventListener('submit', function (e) {
+    e.preventDefault();
     const enEdicion = document.getElementById('docente_id').value !== '';
     const msg = enEdicion
       ? '¿Confirmar los cambios sobre este docente?'
       : '¿Guardar este nuevo docente?';
-    if (!confirm(msg)) e.preventDefault();
+    if (confirm(msg)) this.submit();
   });
 
   // ── Cargar docente desde evento Livewire ──
@@ -209,7 +210,7 @@
 
     cargarMaterias(d.id);
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ── Cancelar edición ──

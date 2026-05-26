@@ -71,7 +71,7 @@ class DocenteController extends Controller
             if ($registroClase) {
                 $dictadoInfo = DB::table('view_docentes_materias_dictadas')
                     ->where('DICTADO_ID', $registroClase->Id_Dictado_Materia)
-                    ->select('DICTADO_ID', 'MATERIA_NOMBRE', 'CURSO_NOMBRE', 'CURSO_ID',
+                    ->select('DICTADO_ID', 'DICTADO_NOMBRE',
                              'MODULO_HORARIO_DESDE as Horario_Desde', 'MODULO_HORARIO_HASTA as Horario_Hasta')
                     ->first();
 
@@ -222,7 +222,14 @@ class DocenteController extends Controller
 
     public function exportarRegistros()
     {
-        $dictados = $this->getDictados();
+        $docente  = $this->getDocente();
+        // Dictados agrupados (uno por dictado, sin repetir por curso)
+        $dictados = DB::table('view_docentes_materias_dictadas_con_cursos')
+            ->where('DOCENTE_ID', $docente->id)
+            ->select('DICTADO_ID', 'DICTADO_NOMBRE')
+            ->distinct()
+            ->orderBy('DICTADO_NOMBRE')
+            ->get();
         return view('docentes.exportar-registros', compact('dictados'));
     }
 

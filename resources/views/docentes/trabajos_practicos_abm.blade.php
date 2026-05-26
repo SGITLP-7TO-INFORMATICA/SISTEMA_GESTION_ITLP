@@ -57,7 +57,7 @@
     <div class="flex gap-0" style="height: 68vh;">
 
       {{-- COLUMNA IZQUIERDA: formulario --}}
-      <div class="flex flex-col gap-[14px] p-6 border-r border-dim overflow-y-auto" style="flex: 0 0 400px; min-width: 320px;">
+      <div class="flex flex-col gap-[14px] p-6 border-r border-dim overflow-y-auto" style="flex: 0 0 500px; min-width: 320px;">
 
         <p class="text-[10px] font-bold text-muted uppercase tracking-[0.12em] -mb-1">Datos del trabajo</p>
 
@@ -121,8 +121,8 @@
                   <option value="">Seleccioná un curso…</option>
                   @foreach ($dictados as $d)
                     <option value="{{ $d->DICTADO_ID }}"
-                      data-label="{{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}">
-                      {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
+                      data-label="{{ $d->DICTADO_NOMBRE }}">
+                      {{ $d->DICTADO_NOMBRE }}
                     </option>
                   @endforeach
                 </select>
@@ -365,7 +365,7 @@
     // Recargar tabla de alumnos con las notas del trabajo
     Livewire.dispatch('recargar-alumnos', { dictadoIds: dictados, trabajoId: t.id });
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ── Cancelar edición ──

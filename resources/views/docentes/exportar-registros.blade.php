@@ -80,7 +80,7 @@
                 <option value="">— Seleccioná una materia —</option>
                 @foreach($dictados as $d)
                   <option value="{{ $d->DICTADO_ID }}" {{ old('dictado_id') == $d->DICTADO_ID ? 'selected' : '' }}>
-                    {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
+                    {{ $d->DICTADO_NOMBRE }}
                   </option>
                 @endforeach
               </select>

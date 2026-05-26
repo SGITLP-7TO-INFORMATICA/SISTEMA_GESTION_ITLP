@@ -67,17 +67,17 @@
           </label>
           <select name="dictado_id" id="dictado_id" required
             class="w-full bg-surface border border-dim2 rounded-lg text-content font-sans text-[13px] px-3 py-2 outline-none appearance-none cursor-pointer transition-[border-color,box-shadow] duration-200 focus:border-accent focus:shadow-[0_0_0_3px_var(--color-glow)]">
-            <option value="">— Seleccioná una materia —</option>
+            <option value="">— Seleccione un dictado —</option>
             @foreach ($dictados as $d)
               <option
                 value="{{ $d->DICTADO_ID }}"
                 data-desde="{{ $d->MODULO_HORARIO_DESDE }}"
                 data-hasta="{{ $d->MODULO_HORARIO_HASTA }}"
                 data-dia="{{ $d->MODULO_DIA }}"
-                data-materia="{{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}"
+                data-materia="{{ $d->DICTADO_NOMBRE }}"
                 {{ old('dictado_id') == $d->DICTADO_ID ? 'selected' : '' }}
               >
-                {{ $d->MATERIA_NOMBRE }} — {{ $d->CURSO_NOMBRE }}
+                {{ $d->DICTADO_NOMBRE }}
                 @if($d->MODULO_DIA) ({{ $d->MODULO_DIA }}) @endif
                 @if($d->MODULO_HORARIO_DESDE_HASTA) ({{ $d->MODULO_HORARIO_DESDE_HASTA }}) @endif
               </option>
@@ -501,7 +501,7 @@
       ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
       : '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>';
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 
   // ── Cancelar edición ──
@@ -572,7 +572,7 @@
   function cargarFechaFaltante(fecha) {
     document.getElementById('fecha').value = fecha;
     verificarFechaConModulo();
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   const lastId = {{ $verRegistroId ?? 'null' }};

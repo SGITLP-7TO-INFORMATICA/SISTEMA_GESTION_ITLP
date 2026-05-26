@@ -176,7 +176,7 @@
     const fila = document.getElementById('fila-' + id);
     if (fila) fila.classList.add('bg-accent/10');
 
-    document.getElementById('main-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function cancelarEdicion() {
@@ -189,11 +189,12 @@
 
   // Confirmar antes de guardar
   document.getElementById('main-form').addEventListener('submit', function (e) {
+    e.preventDefault();
     const enEdicion = document.getElementById('materia_id').value !== '';
     const msg = enEdicion
       ? '¿Confirmar los cambios sobre esta materia?'
       : '¿Guardar esta nueva materia?';
-    if (!confirm(msg)) e.preventDefault();
+    if (confirm(msg)) this.submit();
   });
 </script>
 @endpush
