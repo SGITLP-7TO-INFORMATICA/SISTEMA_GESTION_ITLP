@@ -143,7 +143,7 @@
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left w-[120px]">Estado</th>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[55px]">Pres.</th>
           <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-center w-[55px]">Aus.</th>
-          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Contenidos vistos</th>
+          <th class="px-4 py-[9px] text-[10.5px] font-semibold text-muted uppercase tracking-[0.1em] border-b border-dim bg-surface2 text-left">Objetivo de la clase</th>
           <th class="px-4 py-[9px] border-b border-dim bg-surface2 w-[110px]"></th>
         </tr>
       </thead>
@@ -237,8 +237,8 @@
                 {{ $reg->REGISTRO_CLASE_AUSENTES > 0 ? $reg->REGISTRO_CLASE_AUSENTES : '—' }}
               </td>
 
-              <td class="col-REGISTRO_CLASE_CONTENIDOS px-4 py-[10px] text-[12.5px] text-content">
-                {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_CONTENIDOS ?? '—', 90) }}
+              <td class="col-REGISTRO_CLASE_OBJETIVO px-4 py-[10px] text-[12.5px] text-content">
+                {{ \Illuminate\Support\Str::limit($reg->REGISTRO_CLASE_OBJETIVO ?? '—', 90) }}
               </td>
 
               <td class="px-4 py-[10px]">
